@@ -38,3 +38,15 @@ suivi <- rename(suivi, PB = poids_biomasse_sur_sol, PR= poids_total_racines, NR=
 
 suivi <- suivi %>% mutate(across(c(L1,N1,B1,D1), ~na_if(.,0)))
 
+mapping_severite <- c(
+  "sain0" = "0",
+  "p20" = "10",
+  "p40" = "30",
+  "p60" = "50",
+  "p80" = "70",
+  "p100" = "90",
+  "mort100" = "100"
+ )
+
+suivi$Severite <- mapping_severite[as.character(suivi$Severite)]
+suivi$Severite <- as.numeric(suivi$Severite)
