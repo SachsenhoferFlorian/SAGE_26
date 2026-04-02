@@ -17,3 +17,6 @@ library(corrplot)
 
 library(lubridate)
 library(psych)
+
+library(proxy)
+library(fastDummies)

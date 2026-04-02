@@ -214,3 +214,20 @@ table(variete$Type_manioc, variete$Couleur_nervure)
 variete$nervure_vert <- fct_other(variete$Couleur_nervure, keep = "vert")
 typ_vert_tab <- table(variete$Type_manioc, variete$nervure_vert)
 cramerV(typ_vert_tab)
+
+
+#JACCARD similarity
+
+mca_data <- mca_data %>%
+  mutate(across(5:15, as.factor))
+mca_data_sub <- select(mca_data,5:15)
+mca_dummy <- dummy_cols(mca_data_sub, remove_selected_columns = TRUE)
+
+dist_mat <- dist(mca_dummy, method = "Jaccard")
+sim_mat <- 1- as.matrix(dist_mat)
+rownames(sim_mat) <- mca_data$Code_var
+colnames(sim_mat) <- mca_data$Code_var
+sim_mat
+sim_df <- as.data.frame(as.table(sim_mat))
+sim_df <- sim_df %>% filter(Var1 != Var2) %>% arrange(desc(Freq))
+head(sim_df, 50)
