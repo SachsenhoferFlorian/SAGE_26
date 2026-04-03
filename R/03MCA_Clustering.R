@@ -104,7 +104,7 @@ adjustedRandIndex(mca_data_clustered$clusters_ahc, mca_data_clustered$clust)
 usage_MCA <- variete[, c("Code_var", "Utilisation_bowo",	"Utilisation_cachiri",	"Utilisation_cassave",	"Utilisation_couac", "Utilisation_crabio", "Utilisation_domi_afiingi",	"Utilisation_sispa", "Utilisation_tapioca",	"Utilisation_cramanioc")]
 usage_MCA[] <- lapply(usage_MCA, factor)
 res.mca_usage <- MCA(usage_MCA,quali.sup = 1, graph = FALSE)
-
+res.mca_usage$eig
 fviz_mca_ind(res.mca_usage, repel=TRUE)
 
 fviz_mca_var(res.mca_usage, repel=TRUE, invisible= "quali.sup")
