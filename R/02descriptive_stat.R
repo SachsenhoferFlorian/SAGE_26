@@ -18,9 +18,10 @@ counts_sampling_Comm <-
   variete %>%
   group_by(Commune) %>%
   summarise(
-    number_farmer = n_distinct(Farmer),
-    number_variete = n_distinct(Code_var)
-  ) %>% mutate(alpha= number_variete/number_farmer)
+    Intercom = first(Intercomm),
+    n_farmer = n_distinct(Farmer),
+    n_variete = n_distinct(Code_var),
+  ) %>% mutate(alpha= n_variete/n_farmer)
 
 counts_sampling_Intercomm <-
   variete %>%
@@ -35,6 +36,8 @@ counts_sampling_Farm <-
   group_by(Commune, Farmer) %>%
   summarise(n = n())
 
+#Pivot table with number of farmers from communities
+
 counts_sampling_Eth <-
   variete %>%
   group_by(Communaute) %>%
@@ -43,13 +46,38 @@ counts_sampling_Eth <-
     number_variete = n_distinct(Code_var)
   ) %>% mutate(alpha= number_variete/number_farmer)
 
+counts_sampling_Eth2 <- variete %>%
+  group_by(Commune,Communaute) %>%
+  summarise(n_farmer = n_distinct(Farmer), n_variete = n_distinct(Code_var), .groups = "drop") %>% 
+  mutate(alpha= n_variete/n_farmer) %>%
+  pivot_wider(
+    names_from = Communaute,      
+    values_from = n_farmer,
+    names_prefix = "Ethn",
+    values_fill = 0
+  )
+
+counts_sampling_Eth3 <- variete %>%
+  group_by(Commune) %>%
+  summarise(
+    n_variete = n_distinct(Code_var),
+    n_farmer = n_distinct(Farmer),
+    F_autoch = n_distinct(Farmer[Communaute == "amerindien"]),
+    F_bushi = n_distinct(Farmer[Communaute == "bushinengues"]),
+    F_non = n_distinct(Farmer[Communaute == "non"]),
+    V_autoch = sum(Communaute == "amerindien", na.rm = TRUE),
+    V_bushi = sum(Communaute == "bushinengues", na.rm = TRUE),
+    V_non = sum(Communaute == "non", na.rm = TRUE),
+    alpha = n_variete / n_farmer,
+    .groups = "drop"
+  )
 
 #Venn diagram
 
 variete_Venn <- variete %>%
   mutate(across(all_of(Utilisation_cols), ~ . == 1))
 ggvenn(select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio"))))
-#ggvenn(select(variete_Venn, all_of(Utilisation_cols)))
+
 
 venn.plot <- venn.diagram(
   x = select(variete_Venn, all_of(Utilisation_cols)),

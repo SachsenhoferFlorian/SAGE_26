@@ -2,7 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
-
 # sensitive data
 data/raw/*
 *.xlsx
+VennDiagram.2026-04-07_15-08-57.870693.log
+VennDiagram.2026-04-07_15-09-13.715022.log
+VennDiagram.2026-04-07_15-10-04.50913.log
+VennDiagram.2026-04-07_15-12-23.355759.log
+VennDiagram.2026-04-07_15-12-28.441015.log
+VennDiagram.2026-04-07_15-13-07.155596.log
+VennDiagram.2026-04-07_15-13-22.531722.log
