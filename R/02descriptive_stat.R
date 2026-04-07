@@ -20,7 +20,7 @@ counts_sampling_Comm <-
   summarise(
     number_farmer = n_distinct(Farmer),
     number_variete = n_distinct(Code_var)
-  ) %>% mutate(beta= number_variete/number_farmer)
+  ) %>% mutate(alpha= number_variete/number_farmer)
 
 counts_sampling_Intercomm <-
   variete %>%
@@ -28,7 +28,7 @@ counts_sampling_Intercomm <-
   summarise(
     number_farmer = n_distinct(Farmer),
     number_variete = n_distinct(Code_var)
-  ) %>% mutate(beta= number_variete/number_farmer)
+  ) %>% mutate(alpha= number_variete/number_farmer)
 
 counts_sampling_Farm <- 
   variete %>%
@@ -41,4 +41,39 @@ counts_sampling_Eth <-
   summarise(
     number_farmer = n_distinct(Farmer),
     number_variete = n_distinct(Code_var)
-  ) %>% mutate(beta= number_variete/number_farmer)
+  ) %>% mutate(alpha= number_variete/number_farmer)
+
+
+#Venn diagram
+
+variete_Venn <- variete %>%
+  mutate(across(all_of(Utilisation_cols), ~ . == 1))
+ggvenn(select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio"))))
+#ggvenn(select(variete_Venn, all_of(Utilisation_cols)))
+
+venn.plot <- venn.diagram(
+  x = select(variete_Venn, all_of(Utilisation_cols)),
+  filename = NULL,
+  alpha = 0.5,
+  cex = 1.5,
+  cat.cex = 1.5
+)
+
+venn.plot <- venn.diagram(
+  x = select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio", "Utilisation_domi_afiingi"))),
+  scaled=TRUE,
+  filename = NULL,
+  alpha = 0.5,
+  cex = 1.5,
+  cat.cex = 1.5
+)
+grid.draw(venn.plot)
+
+
+#UpSet diagram
+upset(variete, sets=Utilisation_cols, order.by= "freq")
+
+
+
+
+

@@ -50,3 +50,8 @@ mapping_severite <- c(
 
 suivi$Severite <- mapping_severite[as.character(suivi$Severite)]
 suivi$Severite <- as.numeric(suivi$Severite)
+
+variete$Kramanioc <-  1-(as.numeric(as.factor(variete$Type_manioc))-1)
+Utilisation_cols <- c("Kramanioc", "Utilisation_bowo",	"Utilisation_cachiri",	"Utilisation_cassave",	"Utilisation_couac", "Utilisation_crabio", "Utilisation_domi_afiingi",	"Utilisation_sispa", "Utilisation_tapioca",	"Utilisation_cramanioc")
+variete <- variete %>%
+  mutate(across(all_of(Utilisation_cols), ~ as.numeric(as.character(.))))
