@@ -1,7 +1,7 @@
 #All_descriptors-----------
 
-mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
-res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4), graph = FALSE)
+mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
+res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5), graph = FALSE)
 
 
 fviz_mca_ind(res.mca, repel=TRUE)
@@ -27,7 +27,6 @@ mca_data_clustered <- res.hcpc$data.clust
 
 ggplot(data=mca_data_clustered, aes(x=clust, fill=Commune)) +
   geom_bar()
-
 ggplot(data=mca_data_clustered, aes(x=Commune, fill=clust)) +
   geom_bar()
 
@@ -57,6 +56,12 @@ ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clust)) +
 ggplot(data=mca_data_clustered, aes(x=clust, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
+
+ggplot(data=mca_data_clustered, aes(x=Communaute, fill=clust)) +
+  geom_bar()
+ggplot(data=mca_data_clustered, aes(x=clust, fill=Communaute)) +
+  geom_bar()
+
 
 #kmeans---------
 set.seed(345)
@@ -118,6 +123,8 @@ plot(res.hcpc_usage)
 mca_usage_clust <- res.hcpc_usage$data.clust
 
 res.hcpc_usage$desc.var
+
+#Comparison Usage Cluster Communauté----------
 
 #Comparison Usage Variety Clusters--------
 variete$clust_hcpc <- mca_data_clustered$clust[match(variete$Code_var, mca_data_clustered$Code_var)]
