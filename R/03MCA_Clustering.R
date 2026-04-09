@@ -1,6 +1,6 @@
-#All_descriptors-----------
+#All descriptors-----------
 
-mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
+mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
 res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
 
 
@@ -16,70 +16,87 @@ res.mca$var$coord
 
 fviz_screeplot(res.mca, addlabels = TRUE)
 
+res.hcpc5 <- HCPC(res.mca, nb.clust = 5) #Clustering with manual choice (5)
+res.hcpc5$desc.var
+plot(res.hcpc5)
 
-coords <- res.mca$ind$coord
-res.hcpc <- HCPC(res.mca, nb.clust = 5)
-res.hcpc$desc.var
-plot(res.hcpc)
+mca_data_clustered <- res.hcpc5$data.clust
+variete$cluster5 <- res.hcpc5$data.clust$clust
 
-mca_data_clustered <- res.hcpc$data.clust
+table(variete$cluster5, mca_data_clustered$clust) #Check if clusters were attributed well
 
 
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Commune)) +
+
+
+ggplot(data=variete, aes(x=cluster5, fill=Commune)) +
   geom_bar()
-ggplot(data=mca_data_clustered, aes(x=Commune, fill=clust)) +
-  geom_bar()
-
-
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clust)) +
-  geom_bar()
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Farmer)) +
+ggplot(data=variete, aes(x=Commune, fill=cluster5)) +
   geom_bar()
 
 
-ggplot(data=mca_data_clustered, aes(x=Commune, fill=Farmer)) +
+ggplot(data=variete, aes(x=Farmer, fill=cluster5)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster5, fill=Farmer)) +
   geom_bar()
 
 
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clust)) +
+ggplot(data=variete, aes(x=Commune, fill=Farmer)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x=Farmer, fill=cluster5)) +
   geom_bar() +
   facet_wrap (~ Commune, scales = "free_x")
 
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Farmer)) +
+ggplot(data=variete, aes(x=cluster5, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Commune, scales = "free_x")
 
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clust)) +
+ggplot(data=variete, aes(x=Farmer, fill=cluster5)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
 
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Farmer)) +
+ggplot(data=variete, aes(x=cluster5, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
 
-ggplot(data=mca_data_clustered, aes(x=Communaute, fill=clust)) +
+ggplot(data=variete, aes(x=Communaute, fill=cluster5)) +
   geom_bar()
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Communaute)) +
+ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
   geom_bar()
+
+table(mca_data_clustered$cluster5,mca_data_clustered)
+
+#Cross table
+trait_names <- colnames(mca_data_clustered)
+trait_names <- trait_names[-c(1,2,3,4,18)]
+cluster_freq <- variete %>%
+  pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
+  group_by(cluster5, Trait, Value) %>%
+  summarise(Freq = n(), .groups = "drop") %>%
+  pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
+cluster_freq
+
+lapply(trait_names, function(trait) table(variete$cluster5, variete[[trait]]))
 
 #Analyse Cultivation depuis----------
-mca_data_clustered$Cultivation_depuis <- factor(mca_data_clustered$Cultivation_depuis, levels = c("0-5" ,
-                                                                                                  "5-10" ,
-                                                                                                  "10-15",
-                                                                                                  "15-20",
-                                                                                                  "20"))
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,
+                                                                            "5-10" ,
+                                                                            "10-15",
+                                                                            "15-20",
+                                                                            "20"))
 
 
-ggplot(data=mca_data_clustered, aes(x= Cultivation_depuis, fill=clust)) +
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster5)) +
   geom_bar()
-ggplot(data=mca_data_clustered, aes(x=clust, fill=Cultivation_depuis)) +
+ggplot(data=variete, aes(x=cluster5, fill=Cultivation_depuis)) +
   geom_bar()
 
 
 
-ggplot(data=mca_data_clustered, aes(x= Cultivation_depuis, fill=Communaute)) +
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
   geom_bar()
-ggplot(data=mca_data_clustered, aes(x=Communaute, fill=Cultivation_depuis)) +
+ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
   geom_bar()
 
 
@@ -90,21 +107,22 @@ mapping_Cultiv <- c(
   "15-20" = "17.5",
   "20" = "25"
 )
-mca_data_clustered$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(mca_data_clustered$Cultivation_depuis)])
+variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
 
-mod_ComCult <- lm(data= mca_data_clustered, Cultiv_num ~ Communaute)
+mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
 anova(mod_ComCult)
 summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-
-mod_ClustCult <- lm(data= mca_data_clustered, Cultiv_num ~ clust)
-anova(mod_ClustCult)
-summary(mod_ClustCult)
-emm_MCC <- emmeans(mod_ClustCult, ~ clust)
+er
+mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5)
+anova(mod_cluster5Cult)
+summary(mod_cluster5Cult)
+emm_MCC <- emmeans(mod_cluster5Cult, ~ cluster5)
 pairs(emm_MCC)
 cld_MCC <- cld(emm_MCC, Letters = letters)
+
 
 ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
   geom_boxplot()
@@ -118,10 +136,119 @@ ggplot(as.data.frame(cld_MCoC),
 
 emm_MCC_df <-as.data.frame(cld_MCC)
 ggplot(emm_MCC_df,
-       aes(x = clust, y = emmean)) +
+       aes(x = cluster5, y = emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+#Analysis with automatic clusters------------
+
+res.hcpc3 <- HCPC(res.mca, nb.clust = -1)   #Clustering with automatic cluster choice 
+res.hcpc3$desc.var
+plot(res.hcpc3)
+
+variete$cluster3 <- res.hcpc3$data.clust$clust
+
+ggplot(data=variete, aes(x=cluster3, fill=Commune)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Commune, fill=cluster3)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x=Commune, fill=Farmer)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
+  geom_bar() +
+  facet_wrap (~ Commune, scales = "free_x")
+
+ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
+  geom_bar() +
+  facet_wrap (~ Commune, scales = "free_x")
+
+ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
+  geom_bar() +
+  facet_wrap (~ Intercomm, scales = "free_x")
+
+ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
+  geom_bar() +
+  facet_wrap (~ Intercomm, scales = "free_x")
+
+ggplot(data=variete, aes(x=Communaute, fill=cluster3)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster3, fill=Communaute)) +
+  geom_bar()
+
+#Analyse Cultivation depuis----------
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,
+                                                                            "5-10" ,
+                                                                            "10-15",
+                                                                            "15-20",
+                                                                            "20"))
+
+
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster3)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster3, fill=Cultivation_depuis)) +
+  geom_bar()
+
+
+
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
+  geom_bar()
+
+
+mapping_Cultiv <- c(
+  "0-5" = "2.5",
+  "5-10" = "7.5",
+  "10-15" = "12.5",
+  "15-20" = "17.5",
+  "20" = "25"
+)
+variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
+
+mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
+anova(mod_ComCult)
+summary(mod_ComCult)
+emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
+pairs(emm_MCoC)
+cld_MCoC <- cld(emm_MCoC, Letters = letters)
+er
+mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
+anova(mod_cluster3Cult)
+summary(mod_cluster3Cult)
+emm_MCC <- emmeans(mod_cluster3Cult, ~ cluster3)
+pairs(emm_MCC)
+cld_MCC <- cld(emm_MCC, Letters = letters)
+
+
+
+ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
+  geom_boxplot()
+
+
+ggplot(as.data.frame(cld_MCoC),
+       aes(x = Communaute, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+emm_MCC_df <-as.data.frame(cld_MCC)
+ggplot(emm_MCC_df,
+       aes(x = cluster5, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
 
 #kmeans---------
 set.seed(345)
