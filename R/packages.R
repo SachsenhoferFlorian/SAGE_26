@@ -11,6 +11,8 @@ library(vegan)
 library(mclust)
 library(rcompanion)
 library(emmeans)
+library(multcomp)
+library(multcompView)
 
 library(DescTools)
 library(corrplot)
@@ -24,3 +26,5 @@ library(fastDummies)
 library(ggvenn)
 library(VennDiagram)
 library(UpSetR)
+
+
