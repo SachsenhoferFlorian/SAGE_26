@@ -65,7 +65,7 @@ ggplot(data=variete, aes(x=Communaute, fill=cluster5)) +
 ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
   geom_bar()
 
-table(mca_data_clustered$cluster5,mca_data_clustered)
+table(variete$cluster5,variete$Type_manioc)
 
 #Cross table
 trait_names <- colnames(mca_data_clustered)
@@ -222,7 +222,6 @@ summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
 mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
 anova(mod_cluster3Cult)
 summary(mod_cluster3Cult)
@@ -303,7 +302,7 @@ fviz_mca_var(res.mca_usage, repel=TRUE, invisible= "quali.sup")
 
 fviz_mca_biplot(res.mca_usage, repel=TRUE, invisible= "quali.sup")
 
-#coords_usage <- res.mca_usage$ind$coord
+
 res.hcpc_usage <- HCPC(res.mca_usage, nb.clust=-1)
 plot(res.hcpc_usage)
 
@@ -311,7 +310,7 @@ mca_usage_clust <- res.hcpc_usage$data.clust
 
 res.hcpc_usage$desc.var
 
-#Comparison Usage Cluster Communauté----------
+
 
 #Comparison Usage Variety Clusters--------
 variete$clust_hcpc <- mca_data_clustered$clust[match(variete$Code_var, mca_data_clustered$Code_var)]
@@ -332,6 +331,21 @@ ggplot(data=variete, aes(x=clust_hcpc, fill=clust_usage)) +
 
 ggplot(data=variete, aes(x=clust_usage, fill=clust_hcpc)) +
   geom_bar()
+
+#Comparison Usage Cluster Communauté----------
+
+ggplot(data=variete, aes(x=Communaute, fill=clust_usage)) +
+  geom_bar()
+ggplot(data=variete, aes(x=clust_usage, fill=Communaute)) +
+  geom_bar()
+tab_cluus_comm <- table(variete$clust_usage, variete$Communaute)
+chisq.test(tab_cluus_comm)
+
+utili_names <-c("Utilisation_bowo",	"Utilisation_cachiri",	"Utilisation_cassave",	"Utilisation_couac", "Utilisation_crabio", "Utilisation_domi_afiingi",	"Utilisation_sispa", "Utilisation_tapioca",	"Utilisation_cramanioc")
+lapply(utili_names, function(utili){
+         cat("\nVariable", utili, "\n")
+         print(table(variete$Communaute, variete[[utili]]))
+              })
 
 #Comparison Maturity Variety Clusters---------
 ggplot(data=variete, aes(x=clust_hcpc, fill=mature_class)) +
