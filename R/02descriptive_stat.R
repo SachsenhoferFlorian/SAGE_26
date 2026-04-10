@@ -7,10 +7,12 @@ matrix_traits_cv <- cramers_v_matrix(traits)
 matrix_traits_cv
 
 corrplot(matrix_traits_cv,
-         method = "pie",
+         method = "color",
          type = "full",
          tl.col = "black",
-         tl.srt = 75)
+         tl.srt = 50,
+         addCoef.col = "black",
+         addCoefasPercent = TRUE)
 
 #Distribution sampling sites --------
 
