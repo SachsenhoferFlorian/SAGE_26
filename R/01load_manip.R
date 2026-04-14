@@ -5,7 +5,8 @@ rownames(variete) <- variete$ID
 variete$ID_Enquete <- as.factor(variete$ID_Enquete)
 variete$Farmer <- sprintf("F%02d", as.numeric(factor(variete$ID_Enquete)))
 
-
+variete$Date <- as.Date(variete$Date,origin = "1899-12-30")
+variete$Date_plante <- as.Date(variete$Date_plante,origin = "1899-12-30")
 
 mapping <- c(
   "saint_laurent_du_maroni" = "CCOG",
@@ -66,4 +67,24 @@ Utilisation_cols <- c("Kramanioc", "Utilisation_bowo",	"Utilisation_cachiri",	"U
 variete <- variete %>%
   mutate(across(all_of(Utilisation_cols), ~ as.numeric(as.character(.))))
 
+#numeric values for correlation in suivi
+suivi_numeric <- suivi[sapply(suivi, is.numeric)]
 
+#Joining with variete
+suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
+
+#Growth period
+suivi$growth_period <- suivi$Date - suivi$Date_plante
+
+
+#MCA and HCPC-----------
+
+mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
+res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
+
+res.hcpc5 <- HCPC(res.mca, nb.clust = 5) #Clustering with manual choice (5)
+res.hcpc5$desc.var
+plot(res.hcpc5)
+
+mca_data_clustered <- res.hcpc5$data.clust
+variete$cluster5 <- res.hcpc5$data.clust$clust

@@ -1,8 +1,7 @@
-#All descriptors-----------
+#MCA and HCPC-----------
 
 mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
 res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
-
 
 fviz_mca_ind(res.mca, repel=TRUE)
 
@@ -22,6 +21,8 @@ plot(res.hcpc5)
 
 mca_data_clustered <- res.hcpc5$data.clust
 variete$cluster5 <- res.hcpc5$data.clust$clust
+
+
 
 table(variete$cluster5, mca_data_clustered$clust) #Check if clusters were attributed well
 
