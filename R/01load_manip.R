@@ -28,6 +28,16 @@ variete$mature_class  <- cut(variete$Mois_debut_recolte,
 
 variete$Mois_fin_recolte <- as.factor(variete$Mois_fin_recolte)
 
+
+mapping_Cultiv <- c(
+  "0-5" = "2.5",
+  "5-10" = "7.5",
+  "10-15" = "12.5",
+  "15-20" = "17.5",
+  "20" = "25"
+)
+variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
+
 #Suivi-----------------------------------------
 
 suivi = read.xlsx("data/raw/SuiviAccSAGE.xlsx", sheet = 1)
@@ -55,3 +65,5 @@ variete$Kramanioc <-  1-(as.numeric(as.factor(variete$Type_manioc))-1)
 Utilisation_cols <- c("Kramanioc", "Utilisation_bowo",	"Utilisation_cachiri",	"Utilisation_cassave",	"Utilisation_couac", "Utilisation_crabio", "Utilisation_domi_afiingi",	"Utilisation_sispa", "Utilisation_tapioca",	"Utilisation_cramanioc")
 variete <- variete %>%
   mutate(across(all_of(Utilisation_cols), ~ as.numeric(as.character(.))))
+
+

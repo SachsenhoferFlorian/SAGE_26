@@ -207,14 +207,7 @@ ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
   geom_bar()
 
 
-mapping_Cultiv <- c(
-  "0-5" = "2.5",
-  "5-10" = "7.5",
-  "10-15" = "12.5",
-  "15-20" = "17.5",
-  "20" = "25"
-)
-variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
+
 
 mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
 anova(mod_ComCult)

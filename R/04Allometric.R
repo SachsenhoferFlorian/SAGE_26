@@ -1,3 +1,7 @@
+#Joining with variete
+
+suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
+
 #Calculations--------------
 suivi <- suivi %>% mutate(NLrat0 = N0/L0)
 suivi <- suivi %>% mutate(NLrat1 = N1/L1)
