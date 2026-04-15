@@ -27,6 +27,11 @@ library(ggvenn)
 library(VennDiagram)
 library(UpSetR)
 
+library(lme4)
+library(lmerTest)
+library(see)
+library(performance)
+
 
 #Functions---------------------------------------
 

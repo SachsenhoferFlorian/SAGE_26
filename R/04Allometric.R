@@ -8,7 +8,7 @@ suivi <- suivi %>% mutate(LDrat0= L0/D0)
 suivi <- suivi %>% mutate(LDrat1= L1/D1)
 suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 #Descriptive Analysis---------------------------------
-
+suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
 
 summary(suivi_numeric)
 describe(suivi_numeric)
@@ -31,41 +31,103 @@ corrplot(s_cor_mat,
 
 
 #Modelling Yield Prediction------------------------------
+suivi <- suivi[-58,] # delete NA and biased observation
 
 #All measured variables
-mod_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1,suivi)
-summary(mod_full)
+mod_PR_full <- lmer(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +Severite + (1 | ID_Enquete) ,suivi)
+summary(mod_PR_full)
+plot(fitted(mod_PR_full), rstudent(mod_PR_full))
+check_model(mod_PR_full)
 
-#after manual backward selection (p= 0.05)
+drop1(mod_PR_full, test = "Chisq")
+mod_PR_1 <- update(mod_PR_full, .~. - H)
+anova(mod_PR_1, mod_PR_full)
 
-mod_back <- lm(log(PR) ~  D1 ,suivi)                        # log transformation to correct student plot
-summary(mod_back)
+drop1(mod_PR_1, test = "Chisq")
+mod_PR_2 <- update(mod_PR_1, .~. - B0)
+anova(mod_PR_2, mod_PR_1)
 
+drop1(mod_PR_2, test = "Chisq")
+mod_PR_3 <- update(mod_PR_2, .~. - N0)
+anova(mod_PR_3, mod_PR_2)
 
-student_res <- rstudent(mod_back)
-ggplot(data = data.frame(Fitted = fitted(mod_back), Resid = student_res),
+drop1(mod_PR_3, test = "Chisq")
+mod_PR_4 <- update(mod_PR_3, .~. - B1)
+anova(mod_PR_4, mod_PR_3)
+
+drop1(mod_PR_4, test = "Chisq")
+mod_PR_5 <- update(mod_PR_4, .~. - L0)
+anova(mod_PR_5, mod_PR_4)
+
+drop1(mod_PR_5, test = "Chisq")
+mod_PR_6 <- update(mod_PR_5, .~. - L1)
+anova(mod_PR_6, mod_PR_5)
+
+drop1(mod_PR_6, test = "Chisq")
+mod_PR_7 <- update(mod_PR_6, .~. - N1)
+anova(mod_PR_7, mod_PR_6)
+
+drop1(mod_PR_7, test = "Chisq")
+mod_PR_8 <- update(mod_PR_7, .~. - D1)   
+anova(mod_PR_8, mod_PR_7)
+AIC(mod_PR_8, mod_PR_7)
+
+plot(fitted(mod_PR_8), rstudent(mod_PR_8))     
+check_model(mod_PR_8)
+
+ggplot(data = data.frame(Fitted = fitted(mod_PR_7), Resid = rstudent(mod_PR_7)),
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
 
-#automatic stepwise selection
-mod_step <- step(mod_full)                             #lm(formula = PR ~ L1 + N0 + D1, data = suivi)
-summary(mod_step)
+#Quadratic model------------------------------------------
 
-student_res <- rstudent(mod_step)                                                 # parabel formed pattern in plot -> log or quadratic
-ggplot(data = data.frame(Fitted = fitted(mod_step), Resid = student_res),
-       aes(x = Fitted, y = Resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0, color = "red") +
-  labs(title = "Studentized Residuals Plot")
+mod_PR_quadr_full <-lmer(formula = PR ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + Severite + (1 | ID_Enquete), data = suivi)
+summary(mod_PR_quadr_full)
+plot(fitted(mod_PR_quadr_full), rstudent(mod_PR_quadr_full))
+check_model(mod_PR_quadr_full)
+
+drop1(mod_PR_quadr_full, test = "Chisq")                        #not yet tested, just copy of structure
+mod_PR_quadr_1 <- update(mod_PR_quadr_full, .~. - L1)
+anova(mod_PR_quadr_1, mod_PR_quadr_full)
+
+drop1(mod_PR_quadr_1, test = "Chisq")
+mod_PR_quadr_2 <- update(mod_PR_quadr_1, .~. - B0)
+anova(mod_PR_quadr_2, mod_PR_quadr_1)
+
+drop1(mod_PR_quadr_2, test = "Chisq")
+mod_PR_quadr_3 <- update(mod_PR_quadr_2, .~. - B1)
+anova(mod_PR_quadr_3, mod_PR_quadr_2)
+
+drop1(mod_PR_quadr_3, test = "Chisq")
+mod_PR_quadr_4 <- update(mod_PR_quadr_3, .~. - N1)
+anova(mod_PR_quadr_4, mod_PR_quadr_3)
+
+drop1(mod_PR_quadr_4, test = "Chisq")
+mod_PR_quadr_5 <- update(mod_PR_quadr_4, .~. - H)
+anova(mod_PR_quadr_5, mod_PR_quadr_4)
+
+drop1(mod_PR_quadr_5, test = "Chisq")
+mod_PR_quadr_6 <- update(mod_PR_quadr_5, .~. - L0)
+anova(mod_PR_quadr_6, mod_PR_quadr_5)
+
+drop1(mod_PR_quadr_6, test = "Chisq")
+mod_PR_quadr_7 <- update(mod_PR_quadr_6, .~. - D0)
+anova(mod_PR_quadr_7, mod_PR_quadr_6)
+
+drop1(mod_PR_quadr_7, test = "Chisq")
+
+
 
 #log transformation
 
-mod_full_log <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1,suivi)
+mod_full_log <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite,suivi)
 mod_step_log <- step(mod_full_log)
 summary(mod_step_log)
+
+plot(mod_step_log)
 
 student_res <- rstudent(mod_step_log)
 ggplot(data = data.frame(Fitted = fitted(mod_step_log), Resid = student_res),
@@ -81,8 +143,11 @@ summary(mod_quadr)
 
 mod_step_quadr <- step(mod_quadr)
 mod_step_quadr
-mod_step_quadr <- lm(formula = PR ~ I(L1^2) + N0 + I(D1^2) + D1 + I(H^2) + H + I(D0^2) + D0 + Severite, data = suivi) #adding severity as a correction factor
+mod_step_quadr <- lm(formula = log(PR) ~ I(L1^2) + N0 + I(D1^2) + D1 + I(H^2) + H + I(D0^2) + D0 + Severite, data = suivi) #adding severity as a correction factor
 summary(mod_step_quadr)
+
+plot(mod_step_quadr)
+anova(mod_step,mod_step_quadr)
 
 student_res <- rstudent(mod_step_quadr)
 ggplot(data = data.frame(Fitted = fitted(mod_step_quadr), Resid = student_res),
@@ -117,7 +182,7 @@ ggplot(data = data.frame(Fitted = fitted(model_step), Resid = student_res),   #l
 
 #Modelling growth period
 
-suivi$growth_period <- as.numeric(suivi$growth_period)
+
 model_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 + Type_manioc +Severite,suivi)
 summary(model_full)
 model_step <- step(model_full)

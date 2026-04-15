@@ -47,7 +47,7 @@ suivi$s_ID <- as.character(suivi$s_ID)
 suivi$Date_enquete <- as.Date(suivi$Date_enquete,origin = "1899-12-30")
 suivi <- rename(suivi, PB = poids_biomasse_sur_sol, PR= poids_total_racines, NR=nombre_racines)
 
-suivi <- suivi %>% mutate(across(c(L1,N1,B1,D1), ~na_if(.,0)))
+
 
 mapping_severite <- c(
   "sain0" = "0",
@@ -67,15 +67,12 @@ Utilisation_cols <- c("Kramanioc", "Utilisation_bowo",	"Utilisation_cachiri",	"U
 variete <- variete %>%
   mutate(across(all_of(Utilisation_cols), ~ as.numeric(as.character(.))))
 
+
 #numeric values for correlation in suivi
 suivi_numeric <- suivi[sapply(suivi, is.numeric)]
 
-#Joining with variete
-suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
-
-#Growth period
-suivi$growth_period <- suivi$Date - suivi$Date_plante
-
+#secondary branching present
+suivi$branche1  <- as.numeric(suivi$L1 > 0)
 
 #MCA and HCPC-----------
 
@@ -88,3 +85,11 @@ plot(res.hcpc5)
 
 mca_data_clustered <- res.hcpc5$data.clust
 variete$cluster5 <- res.hcpc5$data.clust$clust
+
+
+#Joining with variete
+suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
+
+#Growth period
+suivi$growth_period <- suivi$Date - suivi$Date_plante
+suivi_numeric$growth_period <- suivi$growth_period
