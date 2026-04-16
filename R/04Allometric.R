@@ -210,6 +210,9 @@ ggplot(data = data.frame(Fitted = fitted(mmod_clust_full), Resid = rstudent(mmod
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
+drop1(mmod_clust_full)
+mmod_PR_gp <- lmer(PR ~  growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
+anova(mmod_clust_full, mmod_PR_gp)        #cluster have no significant effect on yield                                              
 
 emm_clust_mm <- emmeans(mmod_clust_full, ~ cluster5)
 emm_clust_mm
@@ -227,6 +230,7 @@ ggplot(as.data.frame(cld_clust_mm),
 
 #Modelling Harvest Index------------------------
 
+#on ratios
 mod_HI <- lm(HI ~  NLrat0 + NLrat1 + LLrat  + NNrat + DDrat + LDrat0 + LDrat1, filter(suivi, N1 > 0))
 plot(mod_HI)
 summary(mod_HI)
@@ -235,8 +239,22 @@ mod_HI_step <- step(mod_HI)
 mod_HI_step
 summary(mod_HI_step)
 
+
+#on variety clusters
+mmod_HI_clust <- lmer(HI ~  cluster5 + Severite + (1|ID_Enquete/Code_Var) , filter(suivi, N1 > 0))
+check_model(mmod_HI_clust)
+summary(mmod_HI_clust)
+
+drop1(mmod_HI_clust, test = "Chisq")
+mmod_HI_Severite <- lmer(HI ~  Severite + (1|ID_Enquete/Code_Var) , filter(suivi, N1 > 0))
+anova(mmod_HI_Severite, mmod_HI_clust)    #variety clusters have no effect on Harvest Index
+
+
+
+
+
 #Modelling growth period---------------------------------------------------
-mod_gp_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite,suivi)
+mod_gp_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0+ B1 +Severite,suivi)   #lmer does not converge
 summary(mod_gp_full)
 mod_gp_step <- step(mod_gp_full)
 summary(mod_gp_step)
@@ -247,29 +265,18 @@ ggplot(data = data.frame(Fitted = fitted(model_step), Resid = rstudent(model_ste
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
-mod_gp_full <- lmer(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite+ (1|ID_Enquete),suivi)
-summary(mod_gp_full)
+mod_gp_quadr_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite,suivi)
+summary(mod_gp_quadr_full)
 
 
+mod_gp_quadr_full <- lm(growth_period ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) +Severite,suivi)
+summary(mod_gp_quadr_full)
+mod_gp_quadr_step <- step(mod_gp_quadr_full)
+summary(mod_gp_quadr_step)
 
+anova(mod_gp_step, mod_gp_quadr_step)
 
-
-model_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 + cluster5 +Severite,suivi)
-summary(model_full)
-model_step_sim <- step(model_full)
-summary(model_step_sim)
-
-
-model_full <- lm(growth_period ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + cluster5 +Severite,suivi)
-summary(model_full)
-model_step_quadr <- step(model_full)
-summary(model_step_quadr)
-
-anova(model_step_sim,model_step_quadr)
-
-
-student_res <- rstudent(model_step_quadr)
-ggplot(data = data.frame(Fitted = fitted(model_step_quadr), Resid = student_res),   
+ggplot(data = data.frame(Fitted = fitted(mod_gp_quadr_step), Resid = rstudent(mod_gp_quadr_step)),   
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
@@ -278,17 +285,15 @@ ggplot(data = data.frame(Fitted = fitted(model_step_quadr), Resid = student_res)
 
 
 #Modelling Biomass-----------------------------------
-mod_full <- lm(PB ~ H + L0 + L1  + N0 + D0 + D1 + N1,suivi)
-summary(mod_full)
+mod_bm_full <- lm(PB ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 +B1 + Severite,suivi)
+plot(mod_bm_full)
+summary(mod_bm_full)
 
-mod_back_PB <- lm(PB ~ I(L1^2) +L1  + I(N0^2) +N0  + D1 + N1,suivi)
-summary(mod_back_PB)
+mmod_bm_full <- lmer(PB ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 +B1 + Severite + (1|ID_Enquete/Code_Var),suivi)
+check_model(mod_bm_full)
+summary(mmod_bm_full)
 
-mod_back_PB <- lm(log(PB) ~ L1  +N0  + D1 + N1,suivi)
-summary(mod_back_PB)
-
-student_res <- rstudent(mod_back_PB)
-ggplot(data = data.frame(Fitted = fitted(mod_back_PB), Resid = student_res),
+ggplot(data = data.frame(Fitted = fitted(mmod_bm_full), Resid = rstudent(mmod_bm_full)),
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
