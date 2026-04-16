@@ -9,6 +9,8 @@ suivi <- suivi %>% mutate(LDrat1= L1/D1)
 suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 #Descriptive Analysis---------------------------------
 suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
+suivi$growth_period <- as.numeric(suivi$growth_period)
+suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
 
 summary(suivi_numeric)
 describe(suivi_numeric)
@@ -223,31 +225,41 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
+#Modelling Harvest Index------------------------
 
+mod_HI <- lm(HI ~  NLrat0 + NLrat1 + LLrat  + NNrat + DDrat + LDrat0 + LDrat1, filter(suivi, N1 > 0))
+plot(mod_HI)
+summary(mod_HI)
+
+mod_HI_step <- step(mod_HI)
+mod_HI_step
+summary(mod_HI_step)
 
 #Modelling growth period---------------------------------------------------
+mod_gp_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite,suivi)
+summary(mod_gp_full)
+mod_gp_step <- step(mod_gp_full)
+summary(mod_gp_step)
 
-
-model_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 + Type_manioc +Severite,suivi)
-summary(model_full)
-model_step <- step(model_full)
-summary(model_step)
-
-student_res <- rstudent(model_step)
-ggplot(data = data.frame(Fitted = fitted(model_step), Resid = student_res),   
+ggplot(data = data.frame(Fitted = fitted(model_step), Resid = rstudent(model_step)),   
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
-suivi$growth_period <- as.numeric(suivi$growth_period)
+mod_gp_full <- lmer(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 +Severite+ (1|ID_Enquete),suivi)
+summary(mod_gp_full)
+
+
+
+
+
 model_full <- lm(growth_period ~ H + L0 + L1  + N0 + D0 + D1 + N1 + cluster5 +Severite,suivi)
 summary(model_full)
 model_step_sim <- step(model_full)
 summary(model_step_sim)
 
 
-suivi$growth_period <- as.numeric(suivi$growth_period)
 model_full <- lm(growth_period ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + cluster5 +Severite,suivi)
 summary(model_full)
 model_step_quadr <- step(model_full)
@@ -285,6 +297,4 @@ ggplot(data = data.frame(Fitted = fitted(mod_back_PB), Resid = student_res),
 
 
 
-#Modelling Harvest Index------------------------
-mod_a <- lm(HI ~  NLrat0 + NLrat1 + LLrat  + NNrat + DDrat + LDrat0 + LDrat1 ,suivi)
-summary(mod_a)
+
