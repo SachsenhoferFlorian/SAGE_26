@@ -65,6 +65,7 @@ drop1(mod_PR_5, test = "Chisq")
 mod_PR_6 <- update(mod_PR_5, .~. - L1)
 anova(mod_PR_6, mod_PR_5)
 
+AIC(mod_PR_6)
 drop1(mod_PR_6, test = "Chisq")
 mod_PR_7 <- update(mod_PR_6, .~. - N1)
 anova(mod_PR_7, mod_PR_6)
@@ -74,15 +75,61 @@ mod_PR_8 <- update(mod_PR_7, .~. - D1)
 anova(mod_PR_8, mod_PR_7)
 AIC(mod_PR_8, mod_PR_7)
 
-plot(fitted(mod_PR_8), rstudent(mod_PR_8))     
-check_model(mod_PR_8)
+plot(fitted(mod_PR_7), rstudent(mod_PR_7))     
+check_model(mod_PR_7)
 
-ggplot(data = data.frame(Fitted = fitted(mod_PR_8), Resid = rstudent(mod_PR_8)),
+ggplot(data = data.frame(Fitted = fitted(mod_PR_7), Resid = rstudent(mod_PR_7)),
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
+#log transformed
+mod_PR_log_full <- lmer(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +Severite + (1 | ID_Enquete) ,suivi)
+summary(mod_PR_log_full)
+plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
+check_model(mod_PR_log_full)
+
+drop1(mod_PR_log_full, test = "Chisq")
+mod_PR_log_1 <- update(mod_PR_log_full, .~. - B0)
+anova(mod_PR_log_1, mod_PR_log_full)
+
+drop1(mod_PR_log_1, test = "Chisq")
+mod_PR_log_2 <- update(mod_PR_log_1, .~. - L1)
+anova(mod_PR_log_2, mod_PR_log_1)
+
+drop1(mod_PR_log_2, test = "Chisq")
+mod_PR_log_3 <- update(mod_PR_log_2, .~. - B1)
+anova(mod_PR_log_3, mod_PR_log_2)
+
+drop1(mod_PR_log_3, test = "Chisq")
+mod_PR_log_4 <- update(mod_PR_log_3, .~. - N0)
+anova(mod_PR_log_4, mod_PR_log_3)
+
+drop1(mod_PR_log_4, test = "Chisq")
+mod_PR_log_5 <- update(mod_PR_log_4, .~. - L0)
+anova(mod_PR_log_5, mod_PR_log_4)
+
+drop1(mod_PR_log_5, test = "Chisq")
+mod_PR_log_6 <- update(mod_PR_log_5, .~. - D1)
+anova(mod_PR_log_6, mod_PR_log_5)
+
+AIC(mod_PR_log_6)
+drop1(mod_PR_log_6, test = "Chisq")
+mod_PR_log_7 <- update(mod_PR_log_6, .~. - N1)
+anova(mod_PR_log_7, mod_PR_log_6)
+
+drop1(mod_PR_log_7, test = "Chisq")
+AIC(mod_PR_log_6, mod_PR_log_7)
+
+plot(fitted(mod_PR_log_7), rstudent(mod_PR_log_7))     
+check_model(mod_PR_log_7)
+
+ggplot(data = data.frame(Fitted = fitted(mod_PR_log_7), Resid = rstudent(mod_PR_log_7)),
+       aes(x = Fitted, y = Resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(title = "Studentized Residuals Plot")
 
 #Quadratic model------------------------------------------
 
@@ -91,7 +138,7 @@ summary(mod_PR_quadr_full)
 plot(fitted(mod_PR_quadr_full), rstudent(mod_PR_quadr_full))
 check_model(mod_PR_quadr_full)
 
-drop1(mod_PR_quadr_full, test = "Chisq")                        #not yet tested, just copy of structure
+drop1(mod_PR_quadr_full, test = "Chisq")                        
 mod_PR_quadr_1 <- update(mod_PR_quadr_full, .~. - L0)
 anova(mod_PR_quadr_1, mod_PR_quadr_full)
 
@@ -146,6 +193,7 @@ anova(mod_PR_quadr_13, mod_PR_quadr_12)
 drop1(mod_PR_quadr_13, test = "Chisq")
 mod_PR_quadr_14 <- update(mod_PR_quadr_13, .~. - L1)
 anova(mod_PR_quadr_14, mod_PR_quadr_13)
+AIC(mod_PR_quadr_14, mod_PR_quadr_13)
 
 drop1(mod_PR_quadr_14, test = "Chisq")                 #all variables signifcant
 
@@ -153,9 +201,11 @@ summary(mod_PR_quadr_14)
 plot(fitted(mod_PR_quadr_14), rstudent(mod_PR_quadr_14))
 check_model(mod_PR_quadr_14)
 
-anova(mod_PR_8, mod_PR_quadr_14)                       #quadratic model better
+anova( mod_PR_quadr_14,mod_PR_7)    
 
 
+
+AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7)
 
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
