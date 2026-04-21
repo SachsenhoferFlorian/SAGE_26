@@ -68,17 +68,7 @@ ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
 
 table(variete$cluster5,variete$Type_manioc)
 
-#Cross table
-trait_names <- colnames(mca_data_clustered)
-trait_names <- trait_names[-c(1,2,3,4,18)]
-cluster_freq <- variete %>%
-  pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
-  group_by(cluster5, Trait, Value) %>%
-  summarise(Freq = n(), .groups = "drop") %>%
-  pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
-cluster_freq
 
-lapply(trait_names, function(trait) table(variete$cluster5, variete[[trait]]))
 
 #Analyse Cultivation depuis----------
 variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,

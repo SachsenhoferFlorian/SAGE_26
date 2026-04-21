@@ -32,6 +32,9 @@ library(lmerTest)
 library(see)
 library(performance)
 
+library(flextable)
+library(officer)
+
 
 #Functions---------------------------------------
 

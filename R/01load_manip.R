@@ -21,6 +21,20 @@ mapping <- c(
   "sainta_georges" = "CCEG"
 )
 
+mapping_rename <- c(
+  "saint_laurent_du_maroni" = "SLM",
+  "mana" = "Mana",
+  "iracoubo" = "Iracoubo",
+  "sinnaamary" = "Sinnamary",
+  "kourou" = "Kourou",
+  "macouria" = "Macouria",
+  "montsinerya_tonnegrande" = "Montsinery",
+  "rouraa" = "Roura",
+  "regina" = "Regina",
+  "sainta_georges" = "SGO"
+)
+variete$Commune <- mapping_rename[as.character(variete$Commune)]
+
 variete$Intercomm <- mapping[as.character(variete$Commune)]
 
 variete$mature_class  <- cut(variete$Mois_debut_recolte,

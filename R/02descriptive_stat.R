@@ -1,7 +1,9 @@
 #Descriptive statistics--------
-traits <- variete[, c("Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
+traits <- variete[, c("Type_manioc", "Couleur_racine_enquete", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
 traits <- traits %>% mutate(across(everything(), as.factor))
 summary(traits)
+
+
 
 matrix_traits_cv <- cramers_v_matrix(traits)
 matrix_traits_cv
@@ -13,6 +15,75 @@ corrplot(matrix_traits_cv,
          tl.srt = 50,
          addCoef.col = "black",
          addCoefasPercent = TRUE)
+
+
+#Cross table
+trait_names <- colnames(mca_data_clustered)
+trait_names <- trait_names[-c(1,2,3,4,18)]
+cluster_freq <- variete %>%
+  pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
+  group_by(cluster5, Trait, Value) %>%
+  summarise(Freq = n(), .groups = "drop") %>%
+  pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
+cluster_freq
+
+lapply(trait_names, function(trait) table(variete$cluster5, variete[[trait]]))
+
+#Presentation of tables
+tab_type <- as.data.frame(table(variete$Type_manioc))
+colnames(tab_type) <- c("Type de manioc", "Nb")
+tab_type <- tab_type[order(-tab_type$Nb), ]
+ft1 <- flextable(tab_type)
+
+
+tab_colour <- as.data.frame(table(variete$Couleur_racine_enquete))
+colnames(tab_colour) <- c("Couleur racine", "Nb")
+tab_colour <- tab_colour[order(-tab_colour$Nb), ]
+ft2 <- flextable(tab_colour)
+
+
+tab_com <- as.data.frame(table(variete$Commune))
+colnames(tab_com) <- c("Communes", "Nb")
+tab_com <- tab_com[order(-tab_com$Nb), ]
+ft3 <- flextable(tab_com)
+
+
+tab_comm <- as.data.frame(table(variete$Communaute))
+colnames(tab_comm) <- c("Communauté", "Nb")
+tab_comm <- tab_comm[order(-tab_comm$Nb), ]
+ft4 <- flextable(tab_comm)
+
+style_ft <- function(ft) {
+  ft %>%
+    fontsize(size = 16, part = "all") %>%
+    bold(part = "header") %>%
+    align(j = 1, align = "left", part = "all") %>%
+    align(j = 2, align = "center", part = "all") %>%
+    padding(padding = 4, part = "all") %>%
+    autofit()
+}
+
+ft1 <- style_ft(ft1)
+ft2 <- style_ft(ft2)
+ft3 <- style_ft(ft3)
+ft4 <- style_ft(ft4)
+
+ft1 <- bold(ft1, part = "header", bold = TRUE)
+ft2 <- bold(ft2, part = "header", bold = TRUE)
+ft3 <- bold(ft3, part = "header", bold = TRUE)
+ft4 <- bold(ft4, part = "header", bold = TRUE)
+
+doc <- read_pptx() %>%
+  add_slide(layout = "Blank", master = "Office Theme") %>%
+ph_with(
+  value= "Categories et nombres",
+  location = ph_location(left = 0.5, top = 0.2, width = 9, height = 0.8)) %>%
+  ph_with(ft1,location = ph_location(left = 0.5, top = 1.2, width = 4.2, height = 2.8)) %>%
+  ph_with(ft2,location = ph_location(left = 5.2, top = 1.2, width = 4.2, height = 2.8)) %>%
+  ph_with(ft4,location = ph_location(left = 0.5, top = 4.2, width = 4.2, height = 2.8)) %>%
+  ph_with(ft3,location = ph_location(left = 5.2, top = 4.2, width = 4.2, height = 3.8))
+
+print(doc, target = "data/presentation/tableaux_pres.pptx")
 
 #Distribution sampling sites --------
 
