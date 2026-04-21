@@ -204,8 +204,87 @@ check_model(mod_PR_quadr_14)
 anova( mod_PR_quadr_14,mod_PR_7)    
 
 
+#Quadratic logistic model------------------------------------------
 
-AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7)
+mod_PR_quadrlog_full <-lmer(formula = log(PR) ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + (1 | ID_Enquete), data = suivi)
+summary(mod_PR_quadrlog_full)
+plot(fitted(mod_PR_quadrlog_full), rstudent(mod_PR_quadrlog_full))
+check_model(mod_PR_quadrlog_full)
+
+drop1(mod_PR_quadrlog_full, test = "Chisq")                        
+mod_PR_quadrlog_1 <- update(mod_PR_quadrlog_full, .~. - B1)
+anova(mod_PR_quadrlog_1, mod_PR_quadrlog_full)
+
+drop1(mod_PR_quadrlog_1, test = "Chisq")
+mod_PR_quadrlog_2 <- update(mod_PR_quadrlog_1, .~. - I(B1^2))
+anova(mod_PR_quadrlog_2, mod_PR_quadrlog_1)
+
+drop1(mod_PR_quadrlog_2, test = "Chisq")
+mod_PR_quadrlog_3 <- update(mod_PR_quadrlog_2, .~. - I(N0^2))
+anova(mod_PR_quadrlog_3, mod_PR_quadrlog_2)
+
+drop1(mod_PR_quadrlog_3, test = "Chisq")
+mod_PR_quadrlog_4 <- update(mod_PR_quadrlog_3, .~. - I(L0^2))
+anova(mod_PR_quadrlog_4, mod_PR_quadrlog_3)
+
+drop1(mod_PR_quadrlog_4, test = "Chisq")
+mod_PR_quadrlog_5 <- update(mod_PR_quadrlog_4, .~. - I(L1^2))
+anova(mod_PR_quadrlog_5, mod_PR_quadrlog_4)
+
+drop1(mod_PR_quadrlog_5, test = "Chisq")
+mod_PR_quadrlog_6 <- update(mod_PR_quadrlog_5, .~. - B0)
+anova(mod_PR_quadrlog_6, mod_PR_quadrlog_5)
+
+drop1(mod_PR_quadrlog_6, test = "Chisq")
+mod_PR_quadrlog_7 <- update(mod_PR_quadrlog_6, .~. - I(B0^2))
+anova(mod_PR_quadrlog_7, mod_PR_quadrlog_6)
+
+drop1(mod_PR_quadrlog_7, test = "Chisq")
+mod_PR_quadrlog_8 <- update(mod_PR_quadrlog_7, .~. - I(D1^2))
+anova(mod_PR_quadrlog_8, mod_PR_quadrlog_7)
+
+drop1(mod_PR_quadrlog_8, test = "Chisq")
+mod_PR_quadrlog_9 <- update(mod_PR_quadrlog_8, .~. - D1)
+anova(mod_PR_quadrlog_9, mod_PR_quadrlog_8)
+
+drop1(mod_PR_quadrlog_9, test = "Chisq")
+mod_PR_quadrlog_10 <- update(mod_PR_quadrlog_9, .~. -N0)
+anova(mod_PR_quadrlog_10, mod_PR_quadrlog_9)
+
+drop1(mod_PR_quadrlog_10, test = "Chisq")
+mod_PR_quadrlog_11 <- update(mod_PR_quadrlog_10, .~. - L0)
+anova(mod_PR_quadrlog_11, mod_PR_quadrlog_10)
+
+drop1(mod_PR_quadrlog_11, test = "Chisq")
+mod_PR_quadrlog_12 <- update(mod_PR_quadrlog_11, .~. - L1)
+anova(mod_PR_quadrlog_12, mod_PR_quadrlog_11)
+
+drop1(mod_PR_quadrlog_12, test = "Chisq")
+mod_PR_quadrlog_13 <- update(mod_PR_quadrlog_12, .~. - D0)     
+anova(mod_PR_quadrlog_13, mod_PR_quadrlog_12)
+
+drop1(mod_PR_quadrlog_13, test = "Chisq")
+mod_PR_quadrlog_14 <- update(mod_PR_quadrlog_13, .~. - I(H^2))
+anova(mod_PR_quadrlog_14, mod_PR_quadrlog_13)
+AIC(mod_PR_quadrlog_14, mod_PR_quadrlog_13)
+
+drop1(mod_PR_quadrlog_14, test = "Chisq")                 #all variables signifcant
+mod_PR_quadrlog_15 <- update(mod_PR_quadrlog_14, .~. - I(N1^2))
+anova(mod_PR_quadrlog_15, mod_PR_quadrlog_14)
+
+drop1(mod_PR_quadrlog_15, test = "Chisq")  
+
+AIC(mod_PR_quadrlog_15, mod_PR_quadrlog_14)
+
+
+summary(mod_PR_quadrlog_14)
+plot(fitted(mod_PR_quadrlog_14), rstudent(mod_PR_quadrlog_14))
+check_model(mod_PR_quadrlog_14)
+
+
+
+AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7, mod_PR_quadrlog_15)
+
 
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
