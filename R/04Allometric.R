@@ -131,6 +131,9 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_7), Resid = rstudent(mod_PR_
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
+
+
+
 #Quadratic model------------------------------------------
 
 mod_PR_quadr_full <-lmer(formula = PR ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + (1 | ID_Enquete), data = suivi)
@@ -268,23 +271,39 @@ mod_PR_quadrlog_14 <- update(mod_PR_quadrlog_13, .~. - I(H^2))
 anova(mod_PR_quadrlog_14, mod_PR_quadrlog_13)
 AIC(mod_PR_quadrlog_14, mod_PR_quadrlog_13)
 
-drop1(mod_PR_quadrlog_14, test = "Chisq")                 #all variables signifcant
+drop1(mod_PR_quadrlog_14, test = "Chisq")                
 mod_PR_quadrlog_15 <- update(mod_PR_quadrlog_14, .~. - I(N1^2))
 anova(mod_PR_quadrlog_15, mod_PR_quadrlog_14)
 
-drop1(mod_PR_quadrlog_15, test = "Chisq")  
+drop1(mod_PR_quadrlog_15, test = "Chisq")
+mod_PR_quadrlog_16 <- update(mod_PR_quadrlog_15, .~. - N1)
+anova(mod_PR_quadrlog_16, mod_PR_quadrlog_15)
 
-AIC(mod_PR_quadrlog_15, mod_PR_quadrlog_14)
+AIC(mod_PR_quadrlog_16, mod_PR_quadrlog_15)
+drop1(mod_PR_quadrlog_16, test = "Chisq")
+
+summary(mod_PR_quadrlog_15)
+plot(fitted(mod_PR_quadrlog_15), rstudent(mod_PR_quadrlog_15))
+check_model(mod_PR_quadrlog_15)
 
 
-summary(mod_PR_quadrlog_14)
-plot(fitted(mod_PR_quadrlog_14), rstudent(mod_PR_quadrlog_14))
-check_model(mod_PR_quadrlog_14)
+#Model comparison------------------------------------------------
+
+AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7, mod_PR_quadrlog_16)
+r.squaredGLMM(mod_PR_7)
+r.squaredGLMM(mod_PR_log_7)
+r.squaredGLMM(mod_PR_quadr_14)
+r.squaredGLMM( mod_PR_quadrlog_16)
+
+anova(mod_PR_quadrlog_16, mod_PR_log_7)
 
 
+#Interactions forward testing-------------
+mlogtest <- lmer(log(PR) ~ H + D0 + Severite + B0+ B0:D0 + (1 | ID_Enquete),suivi)
+anova(mlogtest, mod_PR_log_7)
 
-AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7, mod_PR_quadrlog_15)
-
+mlogtest <- lmer(log(PR) ~ H + D0 + Severite + B1 + B1:D1 + (1 | ID_Enquete),suivi)
+anova(mlogtest, mod_PR_log_7)
 
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------

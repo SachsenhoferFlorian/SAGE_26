@@ -53,15 +53,6 @@ colnames(tab_comm) <- c("Communauté", "Nb")
 tab_comm <- tab_comm[order(-tab_comm$Nb), ]
 ft4 <- flextable(tab_comm)
 
-style_ft <- function(ft) {
-  ft %>%
-    fontsize(size = 16, part = "all") %>%
-    bold(part = "header") %>%
-    align(j = 1, align = "left", part = "all") %>%
-    align(j = 2, align = "center", part = "all") %>%
-    padding(padding = 4, part = "all") %>%
-    autofit()
-}
 
 ft1 <- style_ft(ft1)
 ft2 <- style_ft(ft2)

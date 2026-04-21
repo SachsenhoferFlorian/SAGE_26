@@ -35,6 +35,8 @@ library(performance)
 library(flextable)
 library(officer)
 
+library(MuMIn)
+
 
 #Functions---------------------------------------
 
@@ -52,4 +54,14 @@ cramers_v_matrix <- function(data) {
   }
   
   return(mat)
+}
+
+style_ft <- function(ft) {
+  ft %>%
+    fontsize(size = 16, part = "all") %>%
+    bold(part = "header") %>%
+    align(j = 1, align = "left", part = "all") %>%
+    align(j = 2, align = "center", part = "all") %>%
+    padding(padding = 4, part = "all") %>%
+    autofit()
 }
