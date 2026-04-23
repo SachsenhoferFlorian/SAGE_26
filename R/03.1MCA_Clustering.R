@@ -16,7 +16,7 @@ res.mca$var$coord
 
 fviz_screeplot(res.mca, addlabels = TRUE)
 
-res.hcpc5 <- HCPC(res.mca, nb.clust = 3) #Clustering with manual choice (5)
+res.hcpc5 <- HCPC(res.mca, nb.clust = -1) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 plot(res.hcpc5)
 
@@ -68,8 +68,9 @@ ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
 table(mca_data_clustered$clust,mca_data_clustered$Type_manioc)
 
 #Cross table
+mca_data_clustered$cluster5 <- mca_data_clust
 trait_names <- colnames(mca_data_clustered)
-trait_names <- trait_names[-c(1,2,3,4,18)]
+trait_names <- trait_names[-c(1,2,3,4,16)]
 cluster_freq <- variete %>%
   pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
   group_by(cluster5, Trait, Value) %>%
@@ -115,7 +116,7 @@ summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
+
 mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5)
 anova(mod_cluster5Cult)
 summary(mod_cluster5Cult)
@@ -222,7 +223,7 @@ summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
+
 mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
 anova(mod_cluster3Cult)
 summary(mod_cluster3Cult)
@@ -244,7 +245,7 @@ ggplot(as.data.frame(cld_MCoC),
 
 emm_MCC_df <-as.data.frame(cld_MCC)
 ggplot(emm_MCC_df,
-       aes(x = cluster5, y = emmean)) +
+       aes(x = cluster3, y = emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   geom_text(aes(label= .group, y = upper.CL), size = 6)
@@ -258,7 +259,7 @@ mca_data_clustered$clusters_kmeans <- kmeans_res$cluster
 adjustedRandIndex(mca_data_clustered$clusters_kmeans, mca_data_clustered$clust)
 
 #AHC---------------------
-dist_mat <- dist(coords)
+dist_mat <- dist(res.mca$ind$coord)
 hc <- hclust(dist_mat, method = "ward.D2")
 plot(hc)
 mca_data_clustered$clusters_ahc <- cutree(hc, k = 5)
@@ -414,7 +415,7 @@ cramerV(typ_vert_tab)
 
 mca_data <- mca_data %>%
   mutate(across(5:15, as.factor))
-mca_data_sub <- select(mca_data,5:15)
+mca_data_sub <- dplyr::select(mca_data,5:15)
 mca_dummy <- dummy_cols(mca_data_sub, remove_selected_columns = TRUE)
 
 dist_mat <- dist(mca_dummy, method = "Jaccard")
@@ -425,3 +426,4 @@ sim_mat
 sim_df <- as.data.frame(as.table(sim_mat))
 sim_df <- sim_df %>% filter(Var1 != Var2) %>% arrange(desc(Freq))
 head(sim_df, 50)
+

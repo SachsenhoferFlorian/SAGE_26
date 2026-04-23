@@ -227,7 +227,7 @@ ggplot(as.data.frame(cld_MCoC),
 
 emm_MCC_df <-as.data.frame(cld_MCC)
 ggplot(emm_MCC_df,
-       aes(x = cluster5, y = emmean)) +
+       aes(x = cluster3, y = emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   geom_text(aes(label= .group, y = upper.CL), size = 6)
@@ -241,7 +241,7 @@ mca_data_clustered$clusters_kmeans <- kmeans_res$cluster
 adjustedRandIndex(mca_data_clustered$clusters_kmeans, mca_data_clustered$clust)
 
 #AHC---------------------
-dist_mat <- dist(coords)
+dist_mat <- dist(res.mca$ind$coord)
 hc <- hclust(dist_mat, method = "ward.D2")
 plot(hc)
 mca_data_clustered$clusters_ahc <- cutree(hc, k = 5)
@@ -357,7 +357,7 @@ chisq.test(finrec_nerv_tab)
 cramerV(finrec_nerv_tab)
 
 
-#ANOVA
+#ANOVA to compare clusters####
 
 modell_debut_rec <- lm( Mois_debut_recolte ~ clust_hcpc, data=variete) 
 anova(modell_debut_rec)                                                         # not significant
@@ -408,11 +408,11 @@ typ_vert_tab <- table(variete$Type_manioc, variete$nervure_vert)
 cramerV(typ_vert_tab)
 
 
-#JACCARD similarity
+#JACCARD similarity for finding of doubles--------
 
 mca_data <- mca_data %>%
   mutate(across(5:15, as.factor))
-mca_data_sub <- select(mca_data,5:15)
+mca_data_sub <- dplyr::select(mca_data,7:17)
 mca_dummy <- dummy_cols(mca_data_sub, remove_selected_columns = TRUE)
 
 dist_mat <- dist(mca_dummy, method = "Jaccard")

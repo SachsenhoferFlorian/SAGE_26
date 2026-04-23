@@ -407,7 +407,7 @@ summary(mod_gp_full)
 mod_gp_step <- step(mod_gp_full)
 summary(mod_gp_step)
 
-ggplot(data = data.frame(Fitted = fitted(model_step), Resid = rstudent(model_step)),   
+ggplot(data = data.frame(Fitted = fitted(mod_gp_step), Resid = rstudent(mod_gp_step)),   
        aes(x = Fitted, y = Resid)) +
   geom_point() +
   geom_hline(yintercept = 0, color = "red") +
@@ -436,7 +436,6 @@ ggplot(data = data.frame(Fitted = fitted(mod_gp_quadr_step), Resid = rstudent(mo
 mod_bm_full <- lm(PB ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 +B1 + Severite,suivi)
 plot(mod_bm_full)
 summary(mod_bm_full)
-
 mmod_bm_full <- lmer(PB ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 +B1 + Severite + (1|ID_Enquete/Code_Var),suivi)
 check_model(mod_bm_full)
 summary(mmod_bm_full)

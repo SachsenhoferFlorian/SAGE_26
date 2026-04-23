@@ -138,21 +138,22 @@ counts_sampling_Eth3 <- variete %>%
 
 #Venn diagram
 
-variete_Venn <- variete %>%
-  mutate(across(all_of(Utilisation_cols), ~ . == 1))
-ggvenn(select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio"))))
+variete_Venn <- variete %>% mutate(across(all_of(Utilisation_cols), ~ . == 1))
+ggvenn(dplyr::select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio"))))
 
 
 venn.plot <- venn.diagram(
-  x = select(variete_Venn, all_of(Utilisation_cols)),
+  x = dplyr::select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio"))),
   filename = NULL,
   alpha = 0.5,
   cex = 1.5,
   cat.cex = 1.5
 )
 
+grid.draw(venn.plot)
+
 venn.plot <- venn.diagram(
-  x = select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio", "Utilisation_domi_afiingi"))),
+  x = dplyr::select(variete_Venn, all_of(c("Utilisation_couac","Utilisation_cassave", "Utilisation_crabio", "Utilisation_domi_afiingi"))),
   scaled=TRUE,
   filename = NULL,
   alpha = 0.5,
