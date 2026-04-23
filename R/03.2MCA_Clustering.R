@@ -20,7 +20,7 @@ res.mca_amer$var$coord
 
 fviz_screeplot(res.mca_amer, addlabels = TRUE)
 
-res.hcpc5 <- HCPC(res.mca_amer, nb.clust = 5) #Clustering with manual choice (5)
+res.hcpc5 <- HCPC(res.mca_amer, nb.clust = -1) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 plot(res.hcpc5)
 

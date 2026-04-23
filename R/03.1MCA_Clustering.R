@@ -68,7 +68,7 @@ ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
 table(mca_data_clustered$clust,mca_data_clustered$Type_manioc)
 
 #Cross table
-mca_data_clustered$cluster5 <- mca_data_clust
+mca_data_clustered$cluster5 <- mca_data$clust
 trait_names <- colnames(mca_data_clustered)
 trait_names <- trait_names[-c(1,2,3,4,16)]
 cluster_freq <- variete %>%
@@ -144,7 +144,7 @@ ggplot(emm_MCC_df,
 
 #Analysis with automatic clusters------------
 
-res.hcpc3 <- HCPC(res.mca, nb.clust = -1)   #Clustering with automatic cluster choice 
+res.hcpc3 <- HCPC(res.mca, nb.clust = 6)   #Clustering with automatic cluster choice 
 res.hcpc3$desc.var
 plot(res.hcpc3)
 
