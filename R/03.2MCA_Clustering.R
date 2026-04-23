@@ -80,17 +80,17 @@ cluster_freq
 
 lapply(trait_names, function(trait) table(mca_data_amer_cla$cluster5, mca_data_amer_cla[[trait]]))
 
+
+variete$clust_kra <- mca_data_amer_cla$clust[match(variete$Code_var, mca_data_amer_cla$Code_var)]
+variete <- variete %>% mutate(clust_kra = if_else(Kramanioc == 1, "kra",as.character(clust_kra)))
+variete$clust_kra <- as.factor(variete$clust_kra)
+
 #Analyse Cultivation depuis----------
-mca_data_amer_cla$Cultivation_depuis <- factor(mca_data_amer_cla$Cultivation_depuis, levels = c("0-5" ,
-                                                                                                "5-10" ,
-                                                                                                "10-15",
-                                                                                                "15-20",
-                                                                                                "20"))
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5","5-10","10-15","15-20","20"))
 
-
-ggplot(data=mca_data_amer_cla, aes(x= Cultivation_depuis, fill=cluster5)) +
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=clust_kra)) +
   geom_bar()
-ggplot(data=mca_data_amer_cla, aes(x=cluster5, fill=Cultivation_depuis)) +
+ggplot(data=mca_data_amer_cla, aes(x=clust_kra, fill=Cultivation_depuis)) +
   geom_bar()
 
 
@@ -164,122 +164,59 @@ res.hcpc5 <- HCPC(res.mca_kra, nb.clust = -1) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 plot(res.hcpc5)
 
-mca_data_kra_cla <- res.hcpc5$data.clust
-mca_data_kra_cla$cluster5 <- mca_data_kra_cla$clust
+#Analysis of both-----------------
 
-
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Commune)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Commune)) +
   geom_bar()
-ggplot(data=mca_data_kra_cla, aes(x=Commune, fill=cluster5)) +
+ggplot(data=variete, aes(x=Commune, fill=clust_kra)) +
   geom_bar()
 
 
-ggplot(data=mca_data_kra_cla, aes(x=Farmer, fill=cluster5)) +
+ggplot(data=variete, aes(x=Farmer, fill=clust_kra)) +
   geom_bar()
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Farmer)) +
-  geom_bar()
-
-
-ggplot(data=mca_data_kra_cla, aes(x=Commune, fill=Farmer)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Farmer)) +
   geom_bar()
 
 
-ggplot(data=mca_data_kra_cla, aes(x=Farmer, fill=cluster5)) +
+ggplot(data=variete, aes(x=Commune, fill=Farmer)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x=Farmer, fill=clust_kra)) +
   geom_bar() +
   facet_wrap (~ Commune, scales = "free_x")
 
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Farmer)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Commune, scales = "free_x")
 
-ggplot(data=mca_data_kra_cla, aes(x=Farmer, fill=cluster5)) +
+ggplot(data=variete, aes(x=Farmer, fill=clust_kra)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
 
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Farmer)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
 
-ggplot(data=mca_data_kra_cla, aes(x=Communaute, fill=cluster5)) +
+ggplot(data=variete, aes(x=Communaute, fill=clust_kra)) +
   geom_bar()
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Communaute)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Communaute)) +
   geom_bar()
 
-table(mca_data_clustered$cluster5,mca_data_clustered)
+table(mca_data_clustered$clust_kra,mca_data_clustered)
 
 #Cross table
 trait_names <- colnames(mca_data_clustered)
 trait_names <- trait_names[-c(1,2,3,4,18)]
-cluster_freq <- mca_data_kra_cla %>%
+cluster_freq <- variete %>%
   pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
-  group_by(cluster5, Trait, Value) %>%
+  group_by(clust_kra, Trait, Value) %>%
   summarise(Freq = n(), .groups = "drop") %>%
   pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
 cluster_freq
 
-lapply(trait_names, function(trait) table(mca_data_kra_cla$cluster5, mca_data_kra_cla[[trait]]))
+lapply(trait_names, function(trait) table(variete$clust_kra, variete[[trait]]))
 
-#Analyse Cultivation depuis----------
-mca_data_kra_cla$Cultivation_depuis <- factor(mca_data_kra_cla$Cultivation_depuis, levels = c("0-5" ,
-                                                                                              "5-10" ,
-                                                                                              "10-15",
-                                                                                              "15-20",
-                                                                                              "20"))
-
-
-ggplot(data=mca_data_kra_cla, aes(x= Cultivation_depuis, fill=cluster5)) +
-  geom_bar()
-ggplot(data=mca_data_kra_cla, aes(x=cluster5, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-ggplot(data=mca_data_kra_cla, aes(x= Cultivation_depuis, fill=Communaute)) +
-  geom_bar()
-ggplot(data=mca_data_kra_cla, aes(x=Communaute, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-mapping_Cultiv <- c(
-  "0-5" = "2.5",
-  "5-10" = "7.5",
-  "10-15" = "12.5",
-  "15-20" = "17.5",
-  "20" = "25"
-)
-mca_data_kra_cla$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(mca_data_kra_cla$Cultivation_depuis)])
-
-mod_ComCult <- lm(data= mca_data_kra_cla, Cultiv_num ~ Communaute)
-anova(mod_ComCult)
-summary(mod_ComCult)
-emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
-pairs(emm_MCoC)
-cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
-mod_cluster5Cult <- lm(data= mca_data_kra_cla, Cultiv_num ~ cluster5)
-anova(mod_cluster5Cult)
-summary(mod_cluster5Cult)
-emm_MCC <- emmeans(mod_cluster5Cult, ~ cluster5)
-pairs(emm_MCC)
-cld_MCC <- cld(emm_MCC, Letters = letters)
-
-
-ggplot(mca_data_kra_cla, aes(x = Communaute, y = Cultiv_num)) +
-  geom_boxplot()
-
-
-ggplot(as.data.frame(cld_MCoC),
-       aes(x = Communaute, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
-
-emm_MCC_df <-as.data.frame(cld_MCC)
-ggplot(emm_MCC_df,
-       aes(x = cluster5, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
 
@@ -355,25 +292,25 @@ cramerV(finrec_nerv_tab)
 
 #ANOVA
 
-modell_debut_rec <- lm( Mois_debut_recolte ~ clust_hcpc, data=variete) 
+modell_debut_rec <- lm( Mois_debut_recolte ~ clust_kra, data=variete) 
 anova(modell_debut_rec)                                                         # not significant
 summary(modell_debut_rec)
-pairs(emmeans(modell_debut_rec, ~clust_hcpc))
+pairs(emmeans(modell_debut_rec, ~clust_kra))
 
 variete$Mois_fin_recolte <- as.numeric(as.character(variete$Mois_fin_recolte))
 
-modell_fin_rec <- lm( Mois_fin_recolte ~ clust_hcpc, data=variete)
+modell_fin_rec <- lm( Mois_fin_recolte ~ clust_kra, data=variete)
 anova(modell_fin_rec)                                                           # significant
 summary(modell_fin_rec)
-pairs(emmeans(modell_fin_rec, ~clust_hcpc))
+pairs(emmeans(modell_fin_rec, ~clust_kra))
 
 
-ggplot(variete, aes(x = clust_hcpc, y = Mois_fin_recolte)) +
+ggplot(variete, aes(x = clust_kra, y = Mois_fin_recolte)) +
   geom_boxplot()
 
-emm_df <- as.data.frame(emmeans(modell_fin_rec, ~ clust_hcpc))
+emm_df <- as.data.frame(emmeans(modell_fin_rec, ~ clust_kra))
 
-ggplot(emm_df, aes(x = clust_hcpc, y = emmean)) +
+ggplot(emm_df, aes(x = clust_kra, y = emmean)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   labs(x = "Cluster", y = "Mois_fin_recolte")
