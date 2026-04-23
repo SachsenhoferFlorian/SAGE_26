@@ -167,23 +167,3 @@ grid.draw(venn.plot)
 upset(variete, sets=Utilisation_cols, order.by= "freq")
 
 
-#Alluvial diagram------
-df <- data.frame(
-  Zeit1 = c("Ja", "Ja", "Nein", "Nein"),
-  Zeit2 = c("Ja", "Nein", "Ja", "Nein"),
-  Zeit3 = c("Nein", "Nein", "Ja", "Nein"),
-  n = c(5, 3, 2, 8)
-)
-
-ggplot(df,
-       aes(axis1 = Zeit1,
-           axis2 = Zeit2,
-           axis3 = Zeit3,
-           y = n)) +
-  geom_alluvium(aes(fill = Zeit1)) +
-  geom_stratum() +
-  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  theme_minimal()
-
-
-

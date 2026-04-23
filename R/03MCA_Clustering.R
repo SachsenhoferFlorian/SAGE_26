@@ -287,13 +287,14 @@ fviz_mca_var(res.mca_usage, repel=TRUE, invisible= "quali.sup")
 fviz_mca_biplot(res.mca_usage, repel=TRUE, invisible= "quali.sup")
 
 
-res.hcpc_usage <- HCPC(res.mca_usage, nb.clust=-1)
+res.hcpc_usage <- HCPC(res.mca_usage, nb.clust=6)
 plot(res.hcpc_usage)
 
 mca_usage_clust <- res.hcpc_usage$data.clust
 
 res.hcpc_usage$desc.var
 
+variete$clust_usage <- mca_usage_clust$clust
 
 
 #Comparison Usage Variety Clusters--------
