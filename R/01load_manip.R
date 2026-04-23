@@ -33,9 +33,10 @@ mapping_rename <- c(
   "regina" = "Regina",
   "sainta_georges" = "SGO"
 )
-variete$Commune <- mapping_rename[as.character(variete$Commune)]
 
 variete$Intercomm <- mapping[as.character(variete$Commune)]
+
+variete$Commune <- mapping_rename[as.character(variete$Commune)]
 
 variete$mature_class  <- cut(variete$Mois_debut_recolte,
                              breaks = c(-Inf, 7, 11, Inf),
@@ -91,6 +92,7 @@ suivi$branche1  <- as.numeric(suivi$L1 > 0)
 #MCA and HCPC-----------
 
 mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
+#mca_data <- mca_data %>%mutate(across(everything(), as.factor))
 res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
 
 res.hcpc5 <- HCPC(res.mca, nb.clust = 5) #Clustering with manual choice (5)

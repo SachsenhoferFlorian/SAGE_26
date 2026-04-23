@@ -18,7 +18,7 @@ corrplot(matrix_traits_cv,
 
 
 #Cross table
-trait_names <- colnames(mca_data_clustered)
+trait_names <- colnames(mca_data)
 trait_names <- trait_names[-c(1,2,3,4,18)]
 cluster_freq <- variete %>%
   pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
