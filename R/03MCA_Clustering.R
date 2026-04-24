@@ -106,7 +106,7 @@ summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
+
 mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5)
 anova(mod_cluster5Cult)
 summary(mod_cluster5Cult)

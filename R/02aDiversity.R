@@ -6,9 +6,7 @@ counts_list <- lapply(mca_data,table)
 div_descript <- sapply(counts_list, diversity, index = "shannon")
 div_table <- enframe(div_descript, name = "group", value = "shannon")
 
-cluster_model <- lm(Mois_fin_recolte ~ Type_manioc + Couleur_feuilles_ap + Pubescence + Couleur_nervure + Couleur_petiole + Forme_lobes + Nombre_lobes + Couleur_tige + Couleur_branches + Ramification + Forme_plante, data= variete)
-anova(cluster_model)
-summary(cluster_model)
+
 
 #Diversity in farmers and communes
 
@@ -77,19 +75,4 @@ diversity_partition <- left_join(alpha_commune, gamma_commune, by = "Commune") %
     beta = gamma / alpha
   )
 
-#Selected Descriptors------------
-
-
-mca_data_1 <- variete[, c("Type_manioc","Couleur_feuille", "Couleur_nervure", "Couleur_petiole", "Couleur_branches", "Couleur_tige", "Forme_lobes", "Nombre_lobes")]
-res.mca_1 <- MCA(mca_data_1, graph = FALSE)
-fviz_mca_ind(res.mca_1)
-fviz_mca_var(res.mca_1)
-
-
-coords_1 <- res.mca_1$ind$coord
-res.hcpc_1 <- HCPC(res.mca_1, nb.clust = -1)
-res.hcpc_1$desc.var
-
-res.hcpc_1$call$t$nb.clust
-plot(res.hcpc_1)
 

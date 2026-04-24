@@ -66,19 +66,7 @@ ggplot(data=mca_data_amer_cla, aes(x=Communaute, fill=cluster5)) +
 ggplot(data=mca_data_amer_cla, aes(x=cluster5, fill=Communaute)) +
   geom_bar()
 
-table(mca_data_clustered$cluster5,mca_data_clustered)
 
-#Cross table
-trait_names <- colnames(mca_data_clustered)
-trait_names <- trait_names[-c(1,2,3,4,18)]
-cluster_freq <- mca_data_amer_cla %>%
-  pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
-  group_by(cluster5, Trait, Value) %>%
-  summarise(Freq = n(), .groups = "drop") %>%
-  pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
-cluster_freq
-
-lapply(trait_names, function(trait) table(mca_data_amer_cla$cluster5, mca_data_amer_cla[[trait]]))
 
 
 variete$clust_kra <- mca_data_amer_cla$clust[match(variete$Code_var, mca_data_amer_cla$Code_var)]
@@ -90,7 +78,7 @@ variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5
 
 ggplot(data=variete, aes(x= Cultivation_depuis, fill=clust_kra)) +
   geom_bar()
-ggplot(data=mca_data_amer_cla, aes(x=clust_kra, fill=Cultivation_depuis)) +
+ggplot(data=variete, aes(x=clust_kra, fill=Cultivation_depuis)) +
   geom_bar()
 
 
@@ -116,7 +104,7 @@ summary(mod_ComCult)
 emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
-er
+
 mod_cluster5Cult <- lm(data= mca_data_amer_cla, Cultiv_num ~ cluster5)
 anova(mod_cluster5Cult)
 summary(mod_cluster5Cult)
@@ -202,20 +190,6 @@ ggplot(data=variete, aes(x=Communaute, fill=clust_kra)) +
   geom_bar()
 ggplot(data=variete, aes(x=clust_kra, fill=Communaute)) +
   geom_bar()
-
-table(mca_data_clustered$clust_kra,mca_data_clustered)
-
-#Cross table
-trait_names <- colnames(mca_data_clustered)
-trait_names <- trait_names[-c(1,2,3,4,18)]
-cluster_freq <- variete %>%
-  pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
-  group_by(clust_kra, Trait, Value) %>%
-  summarise(Freq = n(), .groups = "drop") %>%
-  pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
-cluster_freq
-
-lapply(trait_names, function(trait) table(variete$clust_kra, variete[[trait]]))
 
 
 
@@ -345,7 +319,7 @@ cramerV(typ_vert_tab)
 
 mca_data <- mca_data %>%
   mutate(across(5:15, as.factor))
-mca_data_sub <- select(mca_data,5:15)
+mca_data_sub <- dplyr::select(mca_data,5:15)
 mca_dummy <- dummy_cols(mca_data_sub, remove_selected_columns = TRUE)
 
 dist_mat <- dist(mca_dummy, method = "Jaccard")
@@ -356,3 +330,4 @@ sim_mat
 sim_df <- as.data.frame(as.table(sim_mat))
 sim_df <- sim_df %>% filter(Var1 != Var2) %>% arrange(desc(Freq))
 head(sim_df, 50)
+
