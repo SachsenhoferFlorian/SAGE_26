@@ -15,7 +15,7 @@ res.mca$var$coord
 
 fviz_screeplot(res.mca, addlabels = TRUE)
 
-res.hcpc5 <- HCPC(res.mca, nb.clust = 5) #Clustering with manual choice (5)
+res.hcpc5 <- HCPC(res.mca, nb.clust = 7) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 plot(res.hcpc5)
 
@@ -132,6 +132,21 @@ ggplot(emm_MCC_df,
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
+#Manual Clustering Varieties------------------------
+#Kramanioc
+variete$groupVariete <- if_else(variete$Kramanioc == 1 , "Kra-manioc", NA)
+#Branches and leaves purple etc.
+variete <- variete %>% mutate(groupVariete = if_else(Couleur_branches == "violet" & Couleur_feuilles_ap == "violet", "Purple", groupVariete ))
+#Green venation
+variete <- variete %>% mutate(groupVariete = if_else(Couleur_nervure == "vert", "Ven_green", groupVariete ))
+#Green venation and reddish petiole
+variete <- variete %>% mutate(groupVariete = if_else(Couleur_nervure == "vert" & (Couleur_petiole == "rougeatre-vert" | Couleur_petiole == "vert-rougeatre" ), "Ven_green_Pet_reddish" , groupVariete ))
+#Kra
+variete <- variete %>% mutate(groupVariete = if_else( Kramanioc ==1, "Kra-manioc", groupVariete ))
+#Kra
+variete <- variete %>% mutate(groupVariete = if_else(is.na(groupVariete), "Rest", groupVariete ))
+
+
 #Analysis with automatic clusters------------
 
 res.hcpc3 <- HCPC(res.mca, nb.clust = -1)   #Clustering with automatic cluster choice 
@@ -139,6 +154,8 @@ res.hcpc3$desc.var
 plot(res.hcpc3)
 
 variete$cluster3 <- res.hcpc3$data.clust$clust
+
+variete$cluster3 <- variete$groupVariete
 
 ggplot(data=variete, aes(x=cluster3, fill=Commune)) +
   geom_bar()
@@ -374,25 +391,25 @@ cramerV(finrec_nerv_tab)
 
 #ANOVA to compare clusters####
 
-modell_debut_rec <- lm( Mois_debut_recolte ~ clust_hcpc, data=variete) 
+modell_debut_rec <- lm( Mois_debut_recolte ~ cluster5, data=variete) 
 anova(modell_debut_rec)                                                         # not significant
 summary(modell_debut_rec)
-pairs(emmeans(modell_debut_rec, ~clust_hcpc))
+pairs(emmeans(modell_debut_rec, ~cluster5))
 
 variete$Mois_fin_recolte <- as.numeric(as.character(variete$Mois_fin_recolte))
 
-modell_fin_rec <- lm( Mois_fin_recolte ~ clust_hcpc, data=variete)
+modell_fin_rec <- lm( Mois_fin_recolte ~ cluster5, data=variete)
 anova(modell_fin_rec)                                                           # significant
 summary(modell_fin_rec)
-pairs(emmeans(modell_fin_rec, ~clust_hcpc))
+pairs(emmeans(modell_fin_rec, ~cluster5))
 
 
-ggplot(variete, aes(x = clust_hcpc, y = Mois_fin_recolte)) +
+ggplot(variete, aes(x = cluster5, y = Mois_fin_recolte)) +
   geom_boxplot()
 
-emm_df <- as.data.frame(emmeans(modell_fin_rec, ~ clust_hcpc))
+emm_df <- as.data.frame(emmeans(modell_fin_rec, ~ cluster5))
 
-ggplot(emm_df, aes(x = clust_hcpc, y = emmean)) +
+ggplot(emm_df, aes(x = cluster5, y = emmean)) +
   geom_point(size = 3) +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   labs(x = "Cluster", y = "Mois_fin_recolte")
