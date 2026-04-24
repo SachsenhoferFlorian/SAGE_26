@@ -297,6 +297,20 @@ res.hcpc_usage$desc.var
 variete$clust_usage <- mca_usage_clust$clust
 
 
+#Manual Clustering Usage------------------------
+#Kramanioc
+variete$groupUsage <- if_else(variete$Kramanioc == 1 , "Kra-manioc", NA)
+#Simplecouac etc.
+variete <- variete %>% mutate(groupUsage = if_else(Utilisation_couac == 1 & Kramanioc == 0 , "Couac+", groupUsage ))
+#Cassave without couac
+variete <- variete %>% mutate(groupUsage = if_else(Utilisation_couac == 1 & Utilisation_cassave == 0 , "Cassave w/Couac", groupUsage ))
+#Cachiri
+variete <- variete %>% mutate(groupUsage = if_else(Utilisation_cachiri == 1 , "Cachiri+", groupUsage ))
+#DomiAffingi+Cassave+couac
+variete <- variete %>% mutate(groupUsage = if_else(Utilisation_domi_afiingi == 1 & Kramanioc ==0, "Couac/Cassave/Domi", groupUsage ))
+
+
+
 #Comparison Usage Variety Clusters--------
 variete$clust_hcpc <- mca_data_clustered$clust[match(variete$Code_var, mca_data_clustered$Code_var)]
 variete$clust_usage <- mca_usage_clust$clust[match(variete$Code_var, mca_usage_clust$Code_var)]
