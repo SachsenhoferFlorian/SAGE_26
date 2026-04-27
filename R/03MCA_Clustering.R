@@ -15,9 +15,8 @@ res.mca$var$coord
 
 fviz_screeplot(res.mca, addlabels = TRUE)
 
-res.hcpc5 <- HCPC(res.mca, nb.clust = 7) #Clustering with manual choice (5)
+res.hcpc5 <- HCPC(res.mca, nb.clust = 5) #Clustering with manual choice (5)
 res.hcpc5$desc.var
-plot(res.hcpc5)
 
 mca_data_clustered <- res.hcpc5$data.clust
 variete$cluster5 <- res.hcpc5$data.clust$clust
@@ -25,8 +24,6 @@ variete$cluster5 <- res.hcpc5$data.clust$clust
 
 
 table(variete$cluster5, mca_data_clustered$clust) #Check if clusters were attributed well
-
-
 
 
 ggplot(data=variete, aes(x=cluster5, fill=Commune)) +
@@ -69,91 +66,17 @@ ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
 table(variete$cluster5,variete$Type_manioc)
 
 
-
-#Analyse Cultivation depuis----------
-variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,
-                                                                            "5-10" ,
-                                                                            "10-15",
-                                                                            "15-20",
-                                                                            "20"))
-
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster5)) +
-  geom_bar()
-ggplot(data=variete, aes(x=cluster5, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
-  geom_bar()
-ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-mapping_Cultiv <- c(
-  "0-5" = "2.5",
-  "5-10" = "7.5",
-  "10-15" = "12.5",
-  "15-20" = "17.5",
-  "20" = "25"
-)
-variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
-
-mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
-anova(mod_ComCult)
-summary(mod_ComCult)
-emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
-pairs(emm_MCoC)
-cld_MCoC <- cld(emm_MCoC, Letters = letters)
-
-mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5)
-anova(mod_cluster5Cult)
-summary(mod_cluster5Cult)
-emm_MCC <- emmeans(mod_cluster5Cult, ~ cluster5)
-pairs(emm_MCC)
-cld_MCC <- cld(emm_MCC, Letters = letters)
-
-
-ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
-  geom_boxplot()
-
-
-ggplot(as.data.frame(cld_MCoC),
-       aes(x = Communaute, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
-
-emm_MCC_df <-as.data.frame(cld_MCC)
-ggplot(emm_MCC_df,
-       aes(x = cluster5, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
-
 #Manual Clustering Varieties------------------------
 #Kramanioc
 variete$groupVariete <- if_else(variete$Kramanioc == 1 , "Kra-manioc", NA)
-#Branches and leaves purple etc.
-variete <- variete %>% mutate(groupVariete = if_else(Couleur_branches == "violet" & Couleur_feuilles_ap == "violet", "Purple", groupVariete ))
 #Green venation
 variete <- variete %>% mutate(groupVariete = if_else(Couleur_nervure == "vert", "Ven_green", groupVariete ))
-#Green venation and reddish petiole
-variete <- variete %>% mutate(groupVariete = if_else(Couleur_nervure == "vert" & (Couleur_petiole == "rougeatre-vert" | Couleur_petiole == "vert-rougeatre" ), "Ven_green_Pet_reddish" , groupVariete ))
-#Kra
+#Branches purple or green-purple
+variete <- variete %>% mutate(groupVariete = if_else(Couleur_branches == "violet" | Couleur_branches == "vert_violet", "Purple", groupVariete ))
+#Kramanioc
 variete <- variete %>% mutate(groupVariete = if_else( Kramanioc ==1, "Kra-manioc", groupVariete ))
-#Kra
+#Rest
 variete <- variete %>% mutate(groupVariete = if_else(is.na(groupVariete), "Rest", groupVariete ))
-
-
-#Analysis with automatic clusters------------
-
-res.hcpc3 <- HCPC(res.mca, nb.clust = -1)   #Clustering with automatic cluster choice 
-res.hcpc3$desc.var
-plot(res.hcpc3)
-
-variete$cluster3 <- res.hcpc3$data.clust$clust
 
 variete$cluster3 <- variete$groupVariete
 
@@ -193,61 +116,6 @@ ggplot(data=variete, aes(x=Communaute, fill=cluster3)) +
   geom_bar()
 ggplot(data=variete, aes(x=cluster3, fill=Communaute)) +
   geom_bar()
-
-#Analyse Cultivation depuis----------
-variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,
-                                                                            "5-10" ,
-                                                                            "10-15",
-                                                                            "15-20",
-                                                                            "20"))
-
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster3)) +
-  geom_bar()
-ggplot(data=variete, aes(x=cluster3, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
-  geom_bar()
-ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-
-mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
-anova(mod_ComCult)
-summary(mod_ComCult)
-emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
-pairs(emm_MCoC)
-cld_MCoC <- cld(emm_MCoC, Letters = letters)
-mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
-anova(mod_cluster3Cult)
-summary(mod_cluster3Cult)
-emm_MCC <- emmeans(mod_cluster3Cult, ~ cluster3)
-pairs(emm_MCC)
-cld_MCC <- cld(emm_MCC, Letters = letters)
-
-
-
-ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
-  geom_boxplot()
-
-
-ggplot(as.data.frame(cld_MCoC),
-       aes(x = Communaute, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
-
-emm_MCC_df <-as.data.frame(cld_MCC)
-ggplot(emm_MCC_df,
-       aes(x = cluster3, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
 #kmeans---------
@@ -363,45 +231,149 @@ lapply(utili_names, function(utili){
          print(table(variete$Communaute, variete[[utili]]))
               })
 
+
+#Analyse Cultivation depuis cluster5----------
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" , "5-10" ,"10-15","15-20","20"))
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster5)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster5, fill=Cultivation_depuis)) +
+  geom_bar()
+
+
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
+  geom_bar()
+
+mapping_Cultiv <- c(
+  "0-5" = "2.5",
+  "5-10" = "7.5",
+  "10-15" = "12.5",
+  "15-20" = "17.5",
+  "20" = "25"
+)
+variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
+
+ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
+  geom_boxplot()
+
+mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
+anova(mod_ComCult)
+summary(mod_ComCult)
+emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
+pairs(emm_MCoC)
+cld_MCoC <- cld(emm_MCoC, Letters = letters)
+
+ggplot(as.data.frame(cld_MCoC),
+       aes(x = Communaute, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5+Communaute)
+anova(mod_cluster5Cult)
+summary(mod_cluster5Cult)
+emm_MCC <- emmeans(mod_cluster5Cult, ~ cluster5)
+pairs(emm_MCC)
+cld_MCC <- cld(emm_MCC, Letters = letters)
+emm_MCC_df <-as.data.frame(cld_MCC)
+
+ggplot(emm_MCC_df,
+       aes(x = cluster5, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+#Analyse Cultivation depuis cluster3----------
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,"5-10" , "10-15","15-20", "20"))
+
+
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster3)) +
+  geom_bar()
+ggplot(data=variete, aes(x=cluster3, fill=Cultivation_depuis)) +
+  geom_bar()
+
+
+
+ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
+  geom_bar()
+
+
+
+
+mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
+anova(mod_ComCult)
+summary(mod_ComCult)
+emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
+pairs(emm_MCoC)
+cld_MCoC <- cld(emm_MCoC, Letters = letters)
+mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
+anova(mod_cluster3Cult)
+summary(mod_cluster3Cult)
+emm_MCC <- emmeans(mod_cluster3Cult, ~ cluster3)
+pairs(emm_MCC)
+cld_MCC <- cld(emm_MCC, Letters = letters)
+
+
+
+ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
+  geom_boxplot()
+
+
+ggplot(as.data.frame(cld_MCoC),
+       aes(x = Communaute, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+emm_MCC_df <-as.data.frame(cld_MCC)
+ggplot(emm_MCC_df,
+       aes(x = cluster3, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+
 #Comparison Maturity Variety Clusters---------
-ggplot(data=variete, aes(x=clust_hcpc, fill=mature_class)) +
+ggplot(data=variete, aes(x=cluster5, fill=mature_class)) +
   geom_bar()
 
-ggplot(data=variete, aes(x=mature_class, fill=clust_hcpc)) +
+ggplot(data=variete, aes(x=mature_class, fill=cluster5)) +
   geom_bar()
 
-mat_var_tab <- table(variete$clust_hcpc,variete$mature_class)
+mat_var_tab <- table(variete$cluster5,variete$mature_class)
 chisq.test(mat_var_tab)
 cramerV(mat_var_tab)
 
-ggplot(data=variete, aes(x=clust_hcpc, fill=Mois_fin_recolte)) +
+ggplot(data=variete, aes(x=cluster5, fill=Mois_fin_recolte)) +
   geom_bar()
 
-ggplot(data=variete, aes(x=Mois_fin_recolte, fill=clust_hcpc)) +
+ggplot(data=variete, aes(x=Mois_fin_recolte, fill=cluster5)) +
   geom_bar()
 
-finrec_var_tab <- table(variete$clust_hcpc,variete$Mois_fin_recolte)
+finrec_var_tab <- table(variete$cluster5,variete$Mois_fin_recolte)
 chisq.test(finrec_var_tab)
 cramerV(finrec_var_tab)
 
-finrec_nerv_tab <- table(variete$clust_hcpc,variete$Mois_fin_recolte)
+finrec_nerv_tab <- table(variete$Couleur_nervure,variete$Mois_fin_recolte)
 chisq.test(finrec_nerv_tab)
 cramerV(finrec_nerv_tab)
 
 
-#ANOVA to compare clusters####
+#Models Maturity Clusters----------
 
-modell_debut_rec <- lm( Mois_debut_recolte ~ cluster5, data=variete) 
-anova(modell_debut_rec)                                                         # not significant
-summary(modell_debut_rec)
-pairs(emmeans(modell_debut_rec, ~cluster5))
+model_debut_rec <- lm( Mois_debut_recolte ~ cluster5, data=variete) 
+anova(model_debut_rec)                                                         # not significant
+summary(model_debut_rec)
+pairs(emmeans(model_debut_rec, ~cluster5))
 
 variete$Mois_fin_recolte <- as.numeric(as.character(variete$Mois_fin_recolte))
 
-modell_fin_rec <- lm( Mois_fin_recolte ~ cluster5, data=variete)
-anova(modell_fin_rec)                                                           # significant
-summary(modell_fin_rec)
-pairs(emmeans(modell_fin_rec, ~cluster5))
+model_fin_rec <- lm( Mois_fin_recolte ~ cluster5, data=variete)
+anova(model_fin_rec)                                                           # significant
+summary(model_fin_rec)
+pairs(emmeans(model_fin_rec, ~cluster5))
 
 
 ggplot(variete, aes(x = cluster5, y = Mois_fin_recolte)) +
@@ -426,7 +398,7 @@ chisq.test(typ_nerv_tab)
 cramerV(typ_nerv_tab)
 
 
-modell_typ_fr <- lm( Mois_fin_recolte ~ Couleur_nervure +Type_manioc, data=variete)
+modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+Couleur_nervure , data=variete)
 anova(modell_typ_fr)                                                          
 summary(modell_typ_fr)
 emm_typ_fr <- emmeans(modell_typ_fr, ~Type_manioc)
@@ -435,23 +407,16 @@ pairs(emm_typ_fr)
 
 table(variete$Type_manioc, variete$Couleur_nervure)
 
+modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+cluster5 , data=variete)
+anova(modell_typ_fr)                                                          
+summary(modell_typ_fr)
+emm_typ_fr <- emmeans(modell_typ_fr, ~Type_manioc)
+emm_typ_fr
+pairs(emm_typ_fr)
+
 variete$nervure_vert <- fct_other(variete$Couleur_nervure, keep = "vert")
 typ_vert_tab <- table(variete$Type_manioc, variete$nervure_vert)
 cramerV(typ_vert_tab)
 
 
-#JACCARD similarity for finding of doubles--------
 
-mca_data <- mca_data %>%
-  mutate(across(5:15, as.factor))
-mca_data_sub <- dplyr::select(mca_data,7:17)
-mca_dummy <- dummy_cols(mca_data_sub, remove_selected_columns = TRUE)
-
-dist_mat <- dist(mca_dummy, method = "Jaccard")
-sim_mat <- 1- as.matrix(dist_mat)
-rownames(sim_mat) <- mca_data$Code_var
-colnames(sim_mat) <- mca_data$Code_var
-sim_mat
-sim_df <- as.data.frame(as.table(sim_mat))
-sim_df <- sim_df %>% filter(Var1 != Var2) %>% arrange(desc(Freq))
-head(sim_df, 50)
