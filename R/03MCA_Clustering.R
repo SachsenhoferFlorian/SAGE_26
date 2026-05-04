@@ -379,7 +379,7 @@ pairs(emmeans(model_fin_rec, ~cluster5))
 ggplot(variete, aes(x = cluster5, y = Mois_fin_recolte)) +
   geom_boxplot()
 
-emm_df <- as.data.frame(emmeans(modell_fin_rec, ~ cluster5))
+emm_df <- as.data.frame(emmeans(model_fin_rec, ~ cluster5))
 
 ggplot(emm_df, aes(x = cluster5, y = emmean)) +
   geom_point(size = 3) +

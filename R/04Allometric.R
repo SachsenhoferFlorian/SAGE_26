@@ -31,6 +31,9 @@ corrplot(s_cor_mat,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
 
+#Severity
+mod_Sev <- lm(PR ~ Severite, suivi)
+summary(mod_Sev)
 
 #Modelling Yield Prediction------------------------------
 suivi <- suivi[-58,] # delete NA and biased observation
