@@ -1,21 +1,27 @@
 #MCA and HCPC-----------
+variete <- variete %>% mutate(Couleur_feuilles_ap = factor(Couleur_feuilles_ap, levels = c("vert_clair","vert_fonce","vert_violace","violet"), ordered =TRUE))
+variete <- variete %>% mutate(Couleur_petiole = factor(Couleur_petiole, levels = c("vert","vert_jaunatre","vert_rougeatre","rougeatre-vert","rougeatre","violet"), ordered =TRUE))
+variete <- variete %>% mutate(Couleur_nervure = factor(Couleur_nervure, levels = c("vert","rougeatre_minorite","rougeatre_majorite","rouge"), ordered =TRUE))
+variete <- variete %>% mutate(Couleur_branches = factor(Couleur_branches, levels = c("vert","vert_violet","violet"), ordered =TRUE))
+variete <- variete %>% mutate(Nombre_lobes = factor(Nombre_lobes, levels = c("cinq","sept","neuf"), ordered =TRUE))
 
-mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
-res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
+variete <- variete %>% mutate(
+Couleur_feuilles_ap_n = as.numeric(Couleur_feuilles_ap),
+Couleur_petiole_n = as.numeric(Couleur_petiole),
+Couleur_nervure_n = as.numeric(Couleur_nervure),
+Couleur_branches_n = as.numeric(Couleur_branches),
+Nombre_lobes_n = as.numeric(Nombre_lobes),
+)
 
-fviz_mca_ind(res.mca, repel=TRUE)
+famd_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap_n", "Pubescence", "Couleur_nervure_n", "Couleur_petiole_n", "Forme_lobes", "Nombre_lobes_n", "Couleur_tige", "Couleur_branches_n","Ramification")]
+res.famd <- FAMD(famd_data, sup.var = c(1,2,3,4,5,6), graph = FALSE)
 
-fviz_mca_var(res.mca, repel=TRUE, invisible= "quali.sup")
+res.famd$var$contrib
+res.famd$var$coord
 
-fviz_mca_biplot(res.mca, repel=TRUE, invisible= "quali.sup")
+fviz_screeplot(res.famd, addlabels = TRUE)
 
-res.mca$var$contrib
-
-res.mca$var$coord
-
-fviz_screeplot(res.mca, addlabels = TRUE)
-
-res.hcpc5 <- HCPC(res.mca, nb.clust = -1) #Clustering with manual choice (5)
+res.hcpc5 <- HCPC(res.famd, nb.clust = 4) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 
 mca_data_clustered <- res.hcpc5$data.clust
@@ -66,98 +72,8 @@ ggplot(data=variete, aes(x=cluster5, fill=Communaute)) +
 table(variete$cluster5,variete$Type_manioc)
 
 
-#Manual Clustering Varieties------------------------
-#Kramanioc
-variete$groupVariete <- if_else(variete$Kramanioc == 1 , "Kra-manioc", NA)
-#Green venation
-variete <- variete %>% mutate(groupVariete = if_else(Couleur_nervure == "vert", "Ven_green", groupVariete ))
-#Branches purple or green-purple
-variete <- variete %>% mutate(groupVariete = if_else(Couleur_branches == "violet" | Couleur_branches == "vert_violet", "Purple", groupVariete ))
-#Kramanioc
-variete <- variete %>% mutate(groupVariete = if_else( Kramanioc ==1, "Kra-manioc", groupVariete ))
-#Rest
-variete <- variete %>% mutate(groupVariete = if_else(is.na(groupVariete), "Rest", groupVariete ))
-
-variete$cluster3 <- variete$groupVariete
-
-ggplot(data=variete, aes(x=cluster3, fill=Commune)) +
-  geom_bar()
-ggplot(data=variete, aes(x=Commune, fill=cluster3)) +
-  geom_bar()
 
 
-ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
-  geom_bar()
-ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
-  geom_bar()
-
-
-ggplot(data=variete, aes(x=Commune, fill=Farmer)) +
-  geom_bar()
-
-
-ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
-  geom_bar() +
-  facet_wrap (~ Commune, scales = "free_x")
-
-ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
-  geom_bar() +
-  facet_wrap (~ Commune, scales = "free_x")
-
-ggplot(data=variete, aes(x=Farmer, fill=cluster3)) +
-  geom_bar() +
-  facet_wrap (~ Intercomm, scales = "free_x")
-
-ggplot(data=variete, aes(x=cluster3, fill=Farmer)) +
-  geom_bar() +
-  facet_wrap (~ Intercomm, scales = "free_x")
-
-ggplot(data=variete, aes(x=Communaute, fill=cluster3)) +
-  geom_bar()
-ggplot(data=variete, aes(x=cluster3, fill=Communaute)) +
-  geom_bar()
-
-
-#kmeans---------
-set.seed(345)
-kmeans_res <- kmeans(res.mca$ind$coord, centers = 5)
-mca_data_clustered$clusters_kmeans <- kmeans_res$cluster
-
-adjustedRandIndex(mca_data_clustered$clusters_kmeans, mca_data_clustered$clust)
-
-#AHC---------------------
-dist_mat <- dist(res.mca$ind$coord)
-hc <- hclust(dist_mat, method = "ward.D2")
-plot(hc)
-mca_data_clustered$clusters_ahc <- cutree(hc, k = 5)
-mca_data_clustered$clusters_ahc <- as.factor(mca_data_clustered$clusters_ahc)
-
-ggplot(data=mca_data_clustered, aes(x=clusters_ahc, fill=Commune)) +
-  geom_bar()
-
-ggplot(data=mca_data_clustered, aes(x=Commune, fill=clusters_ahc)) +
-  geom_bar()
-
-
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clusters_ahc)) +
-  geom_bar()
-ggplot(data=mca_data_clustered, aes(x=clusters_ahc, fill=Farmer)) +
-  geom_bar()
-
-
-ggplot(data=mca_data_clustered, aes(x=Commune, fill=Farmer)) +
-  geom_bar()
-
-
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clusters_ahc)) +
-  geom_bar() +
-  facet_wrap (~ Commune, scales = "free_x")
-
-ggplot(data=mca_data_clustered, aes(x=Farmer, fill=clusters_ahc)) +
-  geom_bar() +
-  facet_wrap (~ Intercomm, scales = "free_x")
-
-adjustedRandIndex(mca_data_clustered$clusters_ahc, mca_data_clustered$clust)
 
 #usage clusters--------
 
@@ -283,56 +199,7 @@ ggplot(emm_MCC_df,
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   geom_text(aes(label= .group, y = upper.CL), size = 6)
-#Analyse Cultivation depuis cluster3----------
-variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5" ,"5-10" , "10-15","15-20", "20"))
 
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster3)) +
-  geom_bar()
-ggplot(data=variete, aes(x=cluster3, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
-  geom_bar()
-ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
-  geom_bar()
-
-
-
-
-mod_ComCult <- lm(data= variete, Cultiv_num ~ Communaute)
-anova(mod_ComCult)
-summary(mod_ComCult)
-emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
-pairs(emm_MCoC)
-cld_MCoC <- cld(emm_MCoC, Letters = letters)
-mod_cluster3Cult <- lm(data= variete, Cultiv_num ~ cluster3)
-anova(mod_cluster3Cult)
-summary(mod_cluster3Cult)
-emm_MCC <- emmeans(mod_cluster3Cult, ~ cluster3)
-pairs(emm_MCC)
-cld_MCC <- cld(emm_MCC, Letters = letters)
-
-
-
-ggplot(variete, aes(x = Communaute, y = Cultiv_num)) +
-  geom_boxplot()
-
-
-ggplot(as.data.frame(cld_MCoC),
-       aes(x = Communaute, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
-
-emm_MCC_df <-as.data.frame(cld_MCC)
-ggplot(emm_MCC_df,
-       aes(x = cluster3, y = emmean)) +
-  geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
 #Comparison Maturity Variety Clusters---------
@@ -364,7 +231,7 @@ cramerV(finrec_nerv_tab)
 #Models Maturity Clusters----------
 
 model_debut_rec <- lm( Mois_debut_recolte ~ cluster5, data=variete) 
-anova(model_debut_rec)                                                         # not significant
+anova(model_debut_rec)                                                         #significant
 summary(model_debut_rec)
 pairs(emmeans(model_debut_rec, ~cluster5))
 
@@ -386,7 +253,7 @@ ggplot(emm_df, aes(x = cluster5, y = emmean)) +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   labs(x = "Cluster", y = "Mois_fin_recolte")
 
-modell_fin_rec_nerv <- lm( Mois_fin_recolte ~ Couleur_nervure, data=variete)
+modell_fin_rec_nerv <- lm( Mois_fin_recolte ~ Couleur_nervure_n, data=variete)
 anova(modell_fin_rec_nerv)                                                           # significant
 summary(modell_fin_rec_nerv)
 emm_finrec_nerv <- emmeans(modell_fin_rec_nerv, ~Couleur_nervure)
