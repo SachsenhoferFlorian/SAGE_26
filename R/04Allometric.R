@@ -1,3 +1,6 @@
+#suivi <- suivi %>% mutate(cluster5 = clusterFAMD)
+
+
 #Calculations--------------
 suivi <- suivi %>% mutate(NLrat0 = N0/L0)
 suivi <- suivi %>% mutate(NLrat1 = N1/L1)
@@ -37,6 +40,7 @@ summary(mod_Sev)
 
 #Modelling Yield Prediction------------------------------
 suivi <- suivi[-58,] # delete NA and biased observation
+suivi <- suivi %>% filter(PR > 0)
 
 #All measured variables
 mod_PR_full <- lmer(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +Severite + (1 | ID_Enquete) ,suivi)
@@ -321,7 +325,6 @@ summary(mod_typ_step)
 mod_clust_full <- lm(log(PR) ~  cluster5 + growth_period + Severite ,suivi)
 plot(mod_clust_full)                                               #-> log transformation
 summary(mod_clust_full)
-
 mod_clust_step <- step(mod_clust_full)                            #All variables significant
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_full), Resid = rstudent(mod_clust_full)),   #student plot

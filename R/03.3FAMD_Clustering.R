@@ -25,9 +25,9 @@ res.hcpc5 <- HCPC(res.famd, nb.clust = 4) #Clustering with manual choice (5)
 res.hcpc5$desc.var
 
 mca_data_clustered <- res.hcpc5$data.clust
-variete$cluster5 <- res.hcpc5$data.clust$clust
+variete$clusterFAMD <- res.hcpc5$data.clust$clust
 
-
+suivi <- suivi %>% left_join(variete %>% dplyr::select(Code_var, clusterFAMD),by = c("Code_Var" ="Code_var"))
 
 table(variete$cluster5, mca_data_clustered$clust) #Check if clusters were attributed well
 
@@ -186,7 +186,7 @@ ggplot(as.data.frame(cld_MCoC),
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
-mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5+Communaute)
+mod_cluster5Cult <- lm(data= variete, Cultiv_num ~ cluster5)
 anova(mod_cluster5Cult)
 summary(mod_cluster5Cult)
 emm_MCC <- emmeans(mod_cluster5Cult, ~ cluster5)
