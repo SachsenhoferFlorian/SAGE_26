@@ -24,9 +24,9 @@ DMC_sev_mod <- lm(DMC_pre ~ Severite, suivi)
 summary(DMC_sev_mod)
 
 
-DMC_var_mod <- lm(DMC_pre ~ cluster5,suivi)
+DMC_var_mod <- lm(DMC_pre ~ cluster,suivi)
 summary(DMC_var_mod)
-emm_DMC_var <- emmeans(DMC_var_mod, ~ cluster5)
+emm_DMC_var <- emmeans(DMC_var_mod, ~ cluster)
 pairs(emm_DMC_var)
 
 

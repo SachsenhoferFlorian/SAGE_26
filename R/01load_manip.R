@@ -95,12 +95,12 @@ mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaut
 #mca_data <- mca_data %>%mutate(across(everything(), as.factor))
 res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
 
-res.hcpc5 <- HCPC(res.mca, nb.clust = -1) #Clustering with manual choice (5)
-res.hcpc5$desc.var
-plot(res.hcpc5)
+res.hcpc <- HCPC(res.mca, nb.clust = -1) 
+res.hcpc$desc.var
+plot(res.hcpc)
 
-mca_data_clustered <- res.hcpc5$data.clust
-variete$cluster5 <- res.hcpc5$data.clust$clust
+mca_data_clustered <- res.hcpc$data.clust
+variete$cluster <- res.hcpc$data.clust$clust
 
 
 #Joining with variete

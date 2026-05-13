@@ -1,5 +1,3 @@
-#suivi <- suivi %>% mutate(cluster5 = clusterFAMD)
-
 
 #Calculations--------------
 suivi <- suivi %>% mutate(NLrat0 = N0/L0)
@@ -322,7 +320,7 @@ summary(mod_typ_full)
 mod_typ_step <- step(mod_typ_full)                                #no significant effect of Type_manioc
 summary(mod_typ_step)
 
-mod_clust_full <- lm(log(PR) ~  cluster5 + growth_period + Severite ,suivi)
+mod_clust_full <- lm(log(PR) ~  cluster + growth_period + Severite ,suivi)
 plot(mod_clust_full)                                               #-> log transformation
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)                            #All variables significant
@@ -334,7 +332,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_full), Resid = rstudent(mod_c
   labs(title = "Studentized Residuals Plot")
 
 
-emm_clust <- emmeans(mod_clust_full, ~ cluster5, type = "response")
+emm_clust <- emmeans(mod_clust_full, ~ cluster, type = "response")
 emm_clust
 pairs(emm_clust)
 cld_clust <- cld(emm_clust, Letters = letters)
@@ -342,19 +340,19 @@ cld_clust
 
 
 ggplot(as.data.frame(cld_clust),
-       aes(x = cluster5, y = response)) +
+       aes(x = cluster, y = response)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
-ggplot(suivi, aes(x = growth_period, y = PR, color = cluster5)) +
+ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
   geom_smooth(method = "lm")
 
 
 
-mmod_clust_full <- lmer(PR ~  cluster5 + growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
+mmod_clust_full <- lmer(PR ~  cluster + growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
 check_model(mmod_clust_full)
 summary(mmod_clust_full)
 
@@ -395,7 +393,7 @@ summary(mod_HI_step)
 
 
 #on variety clusters
-mmod_HI_clust <- lmer(HI ~  cluster5 + Severite + (1|ID_Enquete/Code_Var) , filter(suivi, N1 > 0))
+mmod_HI_clust <- lmer(HI ~  cluster + Severite + (1|ID_Enquete/Code_Var) , filter(suivi, N1 > 0))
 check_model(mmod_HI_clust)
 summary(mmod_HI_clust)
 

@@ -27,7 +27,9 @@ res.hcpc5$desc.var
 mca_data_clustered <- res.hcpc5$data.clust
 variete$clusterFAMD <- res.hcpc5$data.clust$clust
 
-suivi <- suivi %>% left_join(variete %>% dplyr::select(Code_var, clusterFAMD),by = c("Code_Var" ="Code_var"))
+#suivi <- suivi %>% left_join(variete %>% dplyr::select(Code_var, clusterFAMD),by = c("Code_Var" ="Code_var"))
+#suivi <- suivi %>% mutate(cluster5 = clusterFAMD)
+
 
 table(variete$cluster5, mca_data_clustered$clust) #Check if clusters were attributed well
 
