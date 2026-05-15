@@ -77,18 +77,18 @@ lapply(utili_names, function(utili){
 
 
 variete_alluv <- variete %>%
-  group_by(cluster5, clust_usage , Communaute) %>%
+  group_by(cluster, clust_usage , Communaute) %>%
   summarise(n = n(), .groups = "drop")
 
 
 #Alluvial diagram------
 
 ggplot(variete_alluv,
-       aes(axis1 = cluster5,
+       aes(axis1 = cluster,
            axis2 = Communaute,
            axis3 = clust_usage,
            y = n)) +
-  geom_alluvium(aes(fill = Communaute)) +
+  geom_alluvium(aes(fill = cluster)) +
   geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   scale_x_discrete(limits = c("Clust_Variete", "Clust_Usage", "Communauté"))+
@@ -98,14 +98,14 @@ ggplot(variete_alluv,
 #Manual Usage groups-------------
 
 variete_alluv1 <- variete %>%
-  group_by(cluster5, groupUsage , Communaute) %>%
+  group_by(cluster, groupUsage , Communaute) %>%
   summarise(n = n(), .groups = "drop")
 
 
 #Alluvial diagram------
 
 ggplot(variete_alluv1,
-       aes(axis1 = cluster5,
+       aes(axis1 = cluster,
            axis2 = Communaute,
            axis3 = groupUsage,
            y = n)) +
@@ -129,17 +129,33 @@ variete_alluv2 <- variete %>%  mutate(id = row_number()) %>%
   group_by(id) %>%
   mutate(weight = 1 / n()) %>%
   ungroup() %>%
-  group_by(cluster5, usage, Communaute) %>%
+  group_by(cluster, usage, Communaute) %>%
   summarise(n = sum(weight), .groups = "drop")
 
+
+variete_alluv2 <- variete_alluv2 %>%
+  mutate(usage = factor(
+    case_when(
+      usage == "Utilisation_bowo" ~ "Bowo",
+      usage == "Utilisation_sispa" ~ "Sispa",
+      usage == "Utilisation_couac" ~ "Couac",
+      usage == "Utilisation_cachiri" ~ "Cachiri",
+      usage == "Utilisation_cassave" ~ "Cassave",
+      usage == "Utilisation_crabio" ~ "Crabio",
+      usage == "Utilisation_cramanioc" ~ "Kramanioc",
+      usage == "Utilisation_tapioca" ~ "Tapioca",
+      usage == "Utilisation_domi_afiingi" ~ "Domi"
+    ),
+    levels = c("Cachiri", "Cassave", "Bowo", "Sispa", "Domi", "Tapioca", "Crabio","Couac","Kramanioc")
+  ))
 # ---- Alluvial plot ----
 
 ggplot(variete_alluv2,
-       aes(axis1 = cluster5,
+       aes(axis1 = cluster,
            axis2 = Communaute,
            axis3 = usage,
            y = n)) +
-  geom_alluvium(aes(fill = Communaute), alpha = 0.8) +
+  geom_alluvium(aes(fill = cluster), alpha = 0.8, lode.guidance = "forward") +
   geom_stratum(width = 0.3) +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   scale_x_discrete(limits = c("Clust_Variete",  "Communauté", "Usages")) +
