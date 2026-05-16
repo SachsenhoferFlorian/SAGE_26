@@ -78,7 +78,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_step), Resid = rstudent(mod_
   labs(title = "Studentized Residuals Plot")
 
 summary(mod_PR_log_step)
-AIC(mod_PR_log_step)
+performance_aic(mod_PR_log_step)
 
 
 #Quadratic model------------------------------------------
