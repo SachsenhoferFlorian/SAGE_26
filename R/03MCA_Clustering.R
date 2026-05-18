@@ -9,6 +9,7 @@ res.mca$var$contrib
 res.mca$var$coord
 
 res.hcpc$desc.var
+res.hcpc$desc.var$category
 
 mca_data_clustered <- res.hcpc$data.clust
 variete$cluster <- res.hcpc$data.clust$clust
@@ -20,6 +21,11 @@ table(variete$cluster, mca_data_clustered$clust) #Check if clusters were attribu
 ggplot(data=variete, aes(x=cluster, fill=Commune)) +
   geom_bar()
 ggplot(data=variete, aes(x=Commune, fill=cluster)) +
+  geom_bar()
+
+ggplot(data=variete, aes(x=cluster, fill=Intercomm)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Intercomm, fill=cluster)) +
   geom_bar()
 
 
@@ -113,6 +119,16 @@ ggplot(emm_MCC_df,
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
+
+
+mod_ClustCult <- lm(data= variete, Cultiv_num ~ cluster)
+anova(mod_ClustCult)
+summary(mod_ClustCult)
+emm_MClC <- emmeans(mod_ClustCult, ~ cluster)
+pairs(emm_MClC)
+cld_MClC <- cld(emm_MClC, Letters = letters)
+
+
 #Comparison Maturity Variety Clusters---------
 ggplot(data=variete, aes(x=cluster, fill=mature_class)) +
   geom_bar()
@@ -142,9 +158,22 @@ cramerV(finrec_nerv_tab)
 #Models Maturity Clusters----------
 
 model_debut_rec <- lm( Mois_debut_recolte ~ cluster, data=variete) 
-anova(model_debut_rec)                                                         # not significant
+anova(model_debut_rec)                                                         
 summary(model_debut_rec)
+emmeans(model_debut_rec, ~cluster)
 pairs(emmeans(model_debut_rec, ~cluster))
+
+model_debut_rec <- lm( Mois_debut_recolte ~ Type_manioc + cluster, data=variete) 
+anova(model_debut_rec)                                                         
+summary(model_debut_rec)
+emmeans(model_debut_rec, ~cluster)
+pairs(emmeans(model_debut_rec, ~cluster))
+
+model_debut_rec <- lm( Mois_debut_recolte ~ Type_manioc, data=variete) 
+anova(model_debut_rec)                                                         
+summary(model_debut_rec)
+emmeans(model_debut_rec, ~Type_manioc)
+pairs(emmeans(model_debut_rec,~Type_manioc ))
 
 variete$Mois_fin_recolte <- as.numeric(as.character(variete$Mois_fin_recolte))
 
@@ -164,21 +193,13 @@ ggplot(emm_df, aes(x = cluster, y = emmean)) +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
   labs(x = "Cluster", y = "Mois_fin_recolte")
 
-modell_fin_rec_nerv <- lm( Mois_fin_recolte ~ Couleur_nervure, data=variete)
-anova(modell_fin_rec_nerv)                                                           # significant
-summary(modell_fin_rec_nerv)
-emm_finrec_nerv <- emmeans(modell_fin_rec_nerv, ~Couleur_nervure)
-emm_finrec_nerv
-pairs(emm_finrec_nerv)
-
-typ_nerv_tab <- table(variete$Couleur_nervure,variete$Type_manioc)
-chisq.test(typ_nerv_tab)
-cramerV(typ_nerv_tab)
 
 
-modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+Couleur_nervure+cluster , data=variete)
+
+modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+cluster , data=variete)
 anova(modell_typ_fr)                                                          
 summary(modell_typ_fr)
+modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc , data=variete)
 emm_typ_fr <- emmeans(modell_typ_fr, ~Type_manioc)
 emm_typ_fr
 pairs(emm_typ_fr)

@@ -76,6 +76,14 @@ lapply(utili_names, function(utili){
 
 
 
+
+#UpSet diagram
+upset(variete, sets=Utilisation_cols, order.by= "freq")
+
+
+
+
+
 variete_alluv <- variete %>%
   group_by(cluster, clust_usage , Communaute) %>%
   summarise(n = n(), .groups = "drop")
@@ -142,11 +150,11 @@ variete_alluv2 <- variete_alluv2 %>%
       usage == "Utilisation_cachiri" ~ "Cachiri",
       usage == "Utilisation_cassave" ~ "Cassave",
       usage == "Utilisation_crabio" ~ "Crabio",
-      usage == "Utilisation_cramanioc" ~ "Kramanioc",
+      usage == "Utilisation_cramanioc" ~ "Sweet cassava",
       usage == "Utilisation_tapioca" ~ "Tapioca",
       usage == "Utilisation_domi_afiingi" ~ "Domi"
     ),
-    levels = c("Cachiri", "Cassave", "Bowo", "Sispa", "Domi", "Tapioca", "Crabio","Couac","Kramanioc")
+    levels = c("Cachiri", "Cassave", "Bowo",  "Domi", "Sispa", "Tapioca", "Crabio","Couac","Sweet cassava")
   ))
 # ---- Alluvial plot ----
 
@@ -164,3 +172,4 @@ ggplot(variete_alluv2,
     title = "Alluvial Diagram Variety -> Communauté -> Usage",
     y = "weighted count"
   )
+
