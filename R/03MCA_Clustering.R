@@ -60,12 +60,8 @@ table(variete$cluster,variete$Type_manioc)
 
 
 
-
-
-
-
 #Analyse Cultivation depuis cluster----------
-variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-" , "-10" ,"10-1","1-20","20"))
+variete$Cultivation_depuis <- factor(variete$Cultivation_depuis, levels = c("0-5","5-10","10-15","15-20","20"))
 ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster)) +
   geom_bar()
 ggplot(data=variete, aes(x=cluster, fill=Cultivation_depuis)) +
@@ -78,11 +74,11 @@ ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
   geom_bar()
 
 mapping_Cultiv <- c(
-  "0-" = "2.",
-  "-10" = "7.",
-  "10-1" = "12.",
-  "1-20" = "17.",
-  "20" = "2"
+  "0-5" = "2.5",
+  "5-10" = "7.5",
+  "10-15" = "12.5",
+  "15-20" = "17.5",
+  "20" = "25"
 )
 variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation_depuis)])
 
@@ -102,7 +98,7 @@ ggplot(as.data.frame(cld_MCoC),
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
-mod_clusterCult <- lm(data= variete, Cultiv_num ~ cluster+Communaute)
+mod_clusterCult <- lm(data= variete, Cultiv_num ~ cluster)
 anova(mod_clusterCult)
 summary(mod_clusterCult)
 emm_MCC <- emmeans(mod_clusterCult, ~ cluster)
@@ -180,7 +176,7 @@ chisq.test(typ_nerv_tab)
 cramerV(typ_nerv_tab)
 
 
-modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+Couleur_nervure , data=variete)
+modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+Couleur_nervure+cluster , data=variete)
 anova(modell_typ_fr)                                                          
 summary(modell_typ_fr)
 emm_typ_fr <- emmeans(modell_typ_fr, ~Type_manioc)
@@ -189,13 +185,3 @@ pairs(emm_typ_fr)
 
 table(variete$Type_manioc, variete$Couleur_nervure)
 
-modell_typ_fr <- lm( Mois_fin_recolte ~ Type_manioc+cluster , data=variete)
-anova(modell_typ_fr)                                                          
-summary(modell_typ_fr)
-emm_typ_fr <- emmeans(modell_typ_fr, ~Type_manioc)
-emm_typ_fr
-pairs(emm_typ_fr)
-
-variete$nervure_vert <- fct_other(variete$Couleur_nervure, keep = "vert")
-typ_vert_tab <- table(variete$Type_manioc, variete$nervure_vert)
-cramerV(typ_vert_tab)

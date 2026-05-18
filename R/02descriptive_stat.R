@@ -22,12 +22,12 @@ trait_names <- colnames(mca_data)
 trait_names <- trait_names[-c(1,2,3,4,18)]
 cluster_freq <- variete %>%
   pivot_longer(cols = all_of(trait_names), names_to = "Trait", values_to = "Value") %>%
-  group_by(cluster5, Trait, Value) %>%
+  group_by(cluster, Trait, Value) %>%
   summarise(Freq = n(), .groups = "drop") %>%
   pivot_wider(names_from = c(Trait, Value), values_from = Freq, values_fill = 0)
 cluster_freq
 
-lapply(trait_names, function(trait) table(variete$cluster5, variete[[trait]]))
+lapply(trait_names, function(trait) table(variete$cluster, variete[[trait]]))
 
 #Presentation of tables
 tab_type <- as.data.frame(table(variete$Type_manioc))
@@ -182,3 +182,12 @@ sim_mat
 sim_df <- as.data.frame(as.table(sim_mat))
 sim_df <- sim_df %>% filter(Var1 != Var2) %>% arrange(desc(Freq))
 head(sim_df, 50)
+
+#check if forme_plante is biased geographically
+ggplot(data=variete, aes(x=Commune, fill=Forme_plante)) +
+  geom_bar()
+ggplot(data=variete, aes(x=Forme_plante, fill=Commune)) +
+  geom_bar()
+
+cramerV(table(variete$Commune,variete$Forme_plante))
+cramerV(table(variete$Intercomm,variete$Forme_plante))
