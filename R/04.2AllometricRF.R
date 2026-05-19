@@ -1,8 +1,9 @@
 library(caret)
 library(randomForest)
+library(nlme)
 
 
-set.seed(123)
+set.seed(146363)
 ctrl <- trainControl(
   method = "repeatedcv",    
   number = 5,              
@@ -56,7 +57,7 @@ importance_rf <- importance(rf_best)
 importance_rf
 importance_df <- data.frame(
   Variable = rownames(importance_rf),
-  IncNodePurity = importance_rf[, "%IncMSE"]  # Oder "IncNodePurity"
+  IncNodePurity = importance_rf[, "%IncMSE"]  
 ) %>% arrange(desc(IncNodePurity))
 importance_df
 
@@ -73,7 +74,7 @@ ggplot(importance_df[1:10,], aes(x = reorder(Variable, IncNodePurity),
 
 
 #Model comparison with linear models
-set.seed(456)
+
 mod_log_cv <- train(
   log(PR) ~ L1 + N0 + D0 + D1 + N1 + B0,
   data = suivi,
@@ -81,7 +82,7 @@ mod_log_cv <- train(
   trControl = ctrl
 )
 
-set.seed(456)
+
 mod_quadrlog_cv <- train(
   log(PR) ~ I(L1^2) + I(N0^2) + N0 + I(D0^2) + D0 + 
     I(N1^2) + N1 + B0 + B1 + I(B1^2),
@@ -89,6 +90,7 @@ mod_quadrlog_cv <- train(
   method = "lm",
   trControl = ctrl
 )
+
 
 mod_log_cv$results$RMSE
 mod_quadrlog_cv$results$RMSE

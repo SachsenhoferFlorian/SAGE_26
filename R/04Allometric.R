@@ -12,7 +12,8 @@ suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
 suivi$growth_period <- as.numeric(suivi$growth_period)
 suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
-suivi <- suivi %>% filter(N0<150)      # deleting observation with mistake
+suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake
+suivi_numeric <- suivi_numeric %>% filter(N0<150 & !is.na(N0))      # deleting observation with mistake
 suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche))
 
 
@@ -60,7 +61,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_step), Resid = rstudent(mod_PR_s
   labs(title = "Studentized Residuals Plot")
 
 summary(mod_PR_step)
-AIC(mod_PR_step)
+performance_aic(mod_PR_step)
 
 #log transformed
 mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period ,suivi)
@@ -90,12 +91,18 @@ summary(mod_PR_quadr_full)
 plot(fitted(mod_PR_quadr_full), rstudent(mod_PR_quadr_full))
 check_model(mod_PR_quadr_full)
 
-mod_PR_quadr_step <- step(mod_PR_quadr_full)    
+mod_PR_quadr_step <- step(mod_PR_quadr_full)
+
+ggplot(data = data.frame(Fitted = fitted(mod_PR_quadr_step), Resid = rstudent(mod_PR_quadr_step)),
+       aes(x = Fitted, y = Resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(title = "Studentized Residuals Plot")
 
 summary(mod_PR_quadr_step)
 AIC(mod_PR_quadr_step)
 
-#Quadratic logistic model------------------------------------------
+#Quadratic logistic model
 
 mod_PR_quadrlog_full <-lm(formula = log(PR) ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + growth_period, data = suivi)
 summary(mod_PR_quadrlog_full)
@@ -108,14 +115,17 @@ summary(mod_PR_quadrlog_step)
 plot(fitted(mod_PR_quadrlog_step), rstudent(mod_PR_quadrlog_step))
 check_model(mod_PR_quadrlog_step)
 
-
+#adding of relevant interactions
+mod_PR_quadrlog_step_int <- lm(formula = log(PR) ~ I(L1^2) + I(N0^2) + N0 + I(D1^2) + D1 + I(D0^2) + I(N1^2) + N1 + B0 + D0:B0 + L0:B0, data = suivi)
+summary(mod_PR_quadrlog_step_int)
+performance_aic(mod_PR_quadrlog_step_int)
 
 #Model comparison------------------------------------------------
 performance_aic(mod_PR_step)
 performance_aic(mod_PR_quadr_step)
 performance_aic(mod_PR_log_step)
 performance_aic(mod_PR_quadrlog_step)
-
+performance_aic(mod_PR_quadrlog_step_int)
 
 
 

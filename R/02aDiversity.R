@@ -2,10 +2,11 @@
 #Shannon--------
 
 #Diversity descriptors
-counts_list <- lapply(mca_data,table)
+counts_list_data <- mca_data[,-c(1,2,3,4,5,6)]
+counts_list <- lapply(counts_list_data,table)
 div_descript <- sapply(counts_list, diversity, index = "shannon")
 div_table <- enframe(div_descript, name = "group", value = "shannon")
-
+div_table <- div_table %>% arrange(desc(shannon))
 
 
 #Diversity in farmers and communes

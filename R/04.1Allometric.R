@@ -92,54 +92,90 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_7), Resid = rstudent(mod_PR_7)),
 performance_aic(mod_PR_7)
 
 #log transformed
-mod_PR_log_full <- lmer(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +Severite + (1 | ID_Enquete) ,suivi)
+mod_PR_log_full <- lmer(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period + (1 | ID_Enquete) ,suivi)
 summary(mod_PR_log_full)
 plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
 check_model(mod_PR_log_full)
 
 drop1(mod_PR_log_full, test = "Chisq")
-mod_PR_log_1 <- update(mod_PR_log_full, .~. - B1)
+mod_PR_log_1 <- update(mod_PR_log_full, .~. - D1:B1)
 anova(mod_PR_log_1, mod_PR_log_full)
 
 drop1(mod_PR_log_1, test = "Chisq")
-mod_PR_log_2 <- update(mod_PR_log_1, .~. - H)
+mod_PR_log_2 <- update(mod_PR_log_1, .~. - Severite)
 anova(mod_PR_log_2, mod_PR_log_1)
 
 drop1(mod_PR_log_2, test = "Chisq")
-mod_PR_log_3 <- update(mod_PR_log_2, .~. - Severite)
+mod_PR_log_3 <- update(mod_PR_log_2, .~. - N0:B0)
 anova(mod_PR_log_3, mod_PR_log_2)
 performance_aic(mod_PR_log_3)
 
 drop1(mod_PR_log_3, test = "Chisq")
-mod_PR_log_4 <- update(mod_PR_log_3, .~. - L0)
+mod_PR_log_4 <- update(mod_PR_log_3, .~. - N0)
 anova(mod_PR_log_4, mod_PR_log_3)
 performance_aic(mod_PR_log_4)
 
 drop1(mod_PR_log_4, test = "Chisq")
-mod_PR_log_5 <- update(mod_PR_log_4, .~. - L1)
+mod_PR_log_5 <- update(mod_PR_log_4, .~. - D1)
 anova(mod_PR_log_5, mod_PR_log_4)
 performance_aic(mod_PR_log_5)
 
 drop1(mod_PR_log_5, test = "Chisq")
-mod_PR_log_6 <- update(mod_PR_log_5, .~. - N1)
+mod_PR_log_6 <- update(mod_PR_log_5, .~. - N1:B1)
 anova(mod_PR_log_6, mod_PR_log_5)
 performance_aic(mod_PR_log_6)
 
 drop1(mod_PR_log_6, test = "Chisq")
-mod_PR_log_7 <- update(mod_PR_log_6, .~. - D0)
+mod_PR_log_7 <- update(mod_PR_log_6, .~. - N1)
 anova(mod_PR_log_7, mod_PR_log_6)
 performance_aic(mod_PR_log_7)
 
 drop1(mod_PR_log_7, test = "Chisq")
-mod_PR_log_8 <- update(mod_PR_log_7, .~. - B0)
+mod_PR_log_8 <- update(mod_PR_log_7, .~. - H)
 anova(mod_PR_log_8, mod_PR_log_7)
 performance_aic(mod_PR_log_8)
 
 drop1(mod_PR_log_8, test = "Chisq")
-performance_aic(mod_PR_log_8)
+mod_PR_log_9 <- update(mod_PR_log_8, .~. - L0:B0)
+anova(mod_PR_log_9, mod_PR_log_8)
+performance_aic(mod_PR_log_9)
 
-plot(fitted(mod_PR_log_8), rstudent(mod_PR_log_8))     
-check_model(mod_PR_log_8)
+drop1(mod_PR_log_9, test = "Chisq")
+mod_PR_log_10 <- update(mod_PR_log_9, .~. - D0:B0)
+anova(mod_PR_log_10, mod_PR_log_9)
+performance_aic(mod_PR_log_10)
+
+drop1(mod_PR_log_10, test = "Chisq")
+mod_PR_log_11 <- update(mod_PR_log_10, .~. - L0)
+anova(mod_PR_log_11, mod_PR_log_10)
+performance_aic(mod_PR_log_11)
+
+drop1(mod_PR_log_11, test = "Chisq")
+mod_PR_log_12 <- update(mod_PR_log_11, .~. - L1:B1)
+anova(mod_PR_log_12, mod_PR_log_11)
+performance_aic(mod_PR_log_12)
+
+drop1(mod_PR_log_12, test = "Chisq")
+mod_PR_log_13 <- update(mod_PR_log_12, .~. - L1)
+anova(mod_PR_log_13, mod_PR_log_12)
+performance_aic(mod_PR_log_13)
+
+drop1(mod_PR_log_13, test = "Chisq")
+mod_PR_log_14 <- update(mod_PR_log_13, .~. - B1)
+anova(mod_PR_log_14, mod_PR_log_13)
+performance_aic(mod_PR_log_14)
+
+drop1(mod_PR_log_14, test = "Chisq")
+mod_PR_log_15 <- update(mod_PR_log_14, .~. - growth_period)
+anova(mod_PR_log_15, mod_PR_log_14)
+performance_aic(mod_PR_log_15)
+
+drop1(mod_PR_log_15, test = "Chisq")
+
+
+
+plot(fitted(mod_PR_log_15), rstudent(mod_PR_log_15))     
+check_model(mod_PR_log_15)
 
 ggplot(data = data.frame(Fitted = fitted(mod_PR_log_8), Resid = rstudent(mod_PR_log_8)),
        aes(x = Fitted, y = Resid)) +
@@ -147,6 +183,8 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_8), Resid = rstudent(mod_PR_
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
+summary(mod_PR_log_15)
+performance_aic(mod_PR_log_15)
 
 
 
