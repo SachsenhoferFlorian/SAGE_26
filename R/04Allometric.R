@@ -132,17 +132,13 @@ performance_aic(mod_PR_quadrlog_step_int)
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
 
-mod_typ_full <- lm(log(PR) ~  Type_manioc + growth_period + Severite  ,suivi)
-plot(fitted(mod_typ_full), rstudent(mod_typ_full))                                              # -> log transformation
-summary(mod_typ_full)
-
-mod_typ_step <- step(mod_typ_full)                                #no significant effect of Type_manioc
-summary(mod_typ_step)
-
-mod_clust_full <- lm(log(PR) ~  cluster + growth_period + Severite ,suivi)
-plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                  #-> log transformation
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite ,suivi)
+plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite ,suivi)
+plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
-mod_clust_step <- step(mod_clust_full)                            
+mod_clust_step <- step(mod_clust_full)
+summary(mod_clust_step)
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_clust_step)),   #student plot
        aes(x = Fitted, y = Resid)) +
@@ -150,32 +146,53 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
+ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
+  geom_point() +
+  geom_smooth(method = "lm")
 
 emm_clust <- emmeans(mod_clust_full, ~ cluster, type = "response")
 emm_clust
 pairs(emm_clust)
-cld_clust <- cld(emm_clust, Letters = letters)
-cld_clust
 
 
-ggplot(as.data.frame(cld_clust),
-       aes(x = cluster, y = response)) +
+mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite  ,suivi)
+plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
+mod_typ_full <- lm(log(PR) ~  cluster*growth_period + Type_manioc*growth_period + Severite  ,suivi)
+plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
+summary(mod_typ_full)
+
+mod_typ_step <- step(mod_typ_full)  
+check_model(mod_typ_step)
+summary(mod_typ_step)
+
+
+emm_type <- emmeans(mod_typ_step, ~ Type_manioc, at = list(growth_period = 360),type = "response")    #  ,type = "response"
+emm_type
+pairs(emm_type)
+cld_type <- cld(emm_type, Letters = letters)
+cld_type
+
+
+ggplot(as.data.frame(cld_type),
+       aes(x = Type_manioc, y = response)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
-ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
+
+ggplot(suivi, aes(x = growth_period, y = PR, color = Type_manioc)) +
   geom_point() +
   geom_smooth(method = "lm")
+
 
 
 #Mixed models------
 
 
-mmod_clust_full <- lmer(PR ~  cluster + growth_period + cluster:growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
+mmod_clust_full <- lmer(PR ~ cluster*growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
 check_model(mmod_clust_full)
-summary(mmod_clust_full)
+anova(mmod_clust_full)
 
 ggplot(data = data.frame(Fitted = fitted(mmod_clust_full), Resid = rstudent(mmod_clust_full)),   #student plot
        aes(x = Fitted, y = Resid)) +
@@ -184,10 +201,31 @@ ggplot(data = data.frame(Fitted = fitted(mmod_clust_full), Resid = rstudent(mmod
   labs(title = "Studentized Residuals Plot")
 
 drop1(mmod_clust_full)
-mmod_clust_fin <- lmer(PR ~  cluster + growth_period + cluster:growth_period + (1 | ID_Enquete/Code_Var)  ,suivi)
-                                             
+mmod_clust_1 <- lmer(PR ~  cluster + growth_period + cluster:growth_period + (1 | ID_Enquete/Code_Var)  ,suivi)
+drop1(mmod_clust_1)                                            
+mmod_clust_2 <- lmer(PR ~  cluster + growth_period + (1 | ID_Enquete/Code_Var)  ,suivi)
+drop1(mmod_clust_2)
+mmod_clust_fin <- lmer(PR ~   growth_period + (1 | ID_Enquete/Code_Var)  ,suivi)
+drop1(mmod_clust_fin)
 
-emm_clust_mm <- emmeans(mmod_clust_fin, ~ cluster, at = list(growth_period = 360))
+
+mmod_clust_full <- lmer(PR ~ Type_manioc*growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
+check_model(mmod_clust_full)
+anova(mmod_clust_full)
+
+ggplot(data = data.frame(Fitted = fitted(mmod_clust_full), Resid = rstudent(mmod_clust_full)),   #student plot
+       aes(x = Fitted, y = Resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(title = "Studentized Residuals Plot")
+
+drop1(mmod_clust_full)
+mmod_clust_fin <- lmer(log(PR) ~  Type_manioc*growth_period + Severite + (1 | ID_Enquete/Code_Var)  ,suivi)
+drop1(mmod_clust_fin)
+mmod_clust_fin <- lmer(log(PR) ~  Type_manioc*growth_period  + (1 | ID_Enquete/Code_Var)  ,suivi)
+anova(mmod_clust_fin)
+
+emm_clust_mm <- emmeans(mmod_clust_fin, ~ Type_manioc, at = list(growth_period = 360), type="response")
 emm_clust_mm
 pairs(emm_clust_mm)
 cld_clust_mm <- cld(emm_clust_mm, Letters = letters)
@@ -217,17 +255,24 @@ mod_HI_step
 summary(mod_HI_step)
 
 
+ggplot(filter(suivi, N1 > 0), aes(x = HI, y =DDrat)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+
 #on variety clusters
-mod_HI_clust <- lm(HI ~  cluster + growth_period + cluster:growth_period + Severite  , suivi)
+mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite  , suivi)
 check_model(mod_HI_clust)
-summary(mod_HI_clust)
+anova(mod_HI_clust)
+anova(mod_HI_clust_step)
 
 mod_HI_clust_step <- step(mod_HI_clust)
 plot(fitted(mod_HI_clust_step), rstudent(mod_HI_clust_step))
 summary(mod_HI_clust_step)
+anova(mod_HI_clust_step)
 
 
-emm_HI_clust <- emmeans(mod_HI_clust_step, ~ cluster, at = list(growth_period = 360))
+emm_HI_clust <- emmeans(mod_HI_clust_step, ~ cluster:growth_period, at = list(growth_period = 360))
 emm_HI_clust
 pairs(emm_HI_clust)
 cld_HI_clust <- cld(emm_HI_clust, Letters = letters)
@@ -239,7 +284,85 @@ ggplot(as.data.frame(cld_HI_clust),
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
+ggplot(suivi, aes(x = HI, y = cluster:growth_period)) +
+  geom_point() +
+  geom_smooth(method = "lm")
 
+emtrends(mod_HI_clust_step, ~ cluster, var = "growth_period")  
+pairs(emtrends(mod_HI_clust_step, ~ cluster, var = "growth_period"))
+
+
+# Get predictions across a range of growth_period values
+pred_grid <- ref_grid(mod_HI_clust_step, 
+                      at = list(growth_period = seq(160, 950, length = 100)))
+preds <- as.data.frame(emmeans(pred_grid, ~ cluster * growth_period))
+
+# Plot
+ggplot(preds, aes(x = growth_period, y = emmean, color = cluster, fill = cluster)) +
+  geom_point(data = suivi, 
+             aes(x = growth_period, y = HI, color = cluster),
+             alpha = 0.3, size = 1) +
+  geom_ribbon(aes(ymin = lower.CL, ymax = upper.CL), alpha = 0.2, color = NA) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal() +
+  labs(x = "Growth Period", 
+       y = "Predicted Outcome", 
+       color = "Cluster",
+       title = "Significant Cluster × Growth Period Interaction",
+       subtitle = "Lines show slopes differing by cluster (main effects non-significant)") +
+  theme(legend.position = "bottom")
+
+
+#on cassava type--------
+
+mod_HI_clust <- lm(HI ~  growth_period*Type_manioc + Severite  , suivi)
+check_model(mod_HI_clust)
+anova(mod_HI_clust)
+
+
+mod_HI_clust_step <- step(mod_HI_clust)
+plot(fitted(mod_HI_clust_step), rstudent(mod_HI_clust_step))
+summary(mod_HI_clust_step)
+anova(mod_HI_clust_step)
+
+
+emm_HI_clust <- emmeans(mod_HI_clust_step, ~ Type_manioc:growth_period, at = list(growth_period = 360))
+emm_HI_clust
+pairs(emm_HI_clust)
+cld_HI_clust <- cld(emm_HI_clust, Letters = letters)
+cld_HI_clust
+
+ggplot(as.data.frame(cld_HI_clust),
+       aes(x = Type_manioc, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+
+
+emtrends(mod_HI_clust_step, ~ Type_manioc, var = "growth_period")  
+pairs(emtrends(mod_HI_clust_step, ~ Type_manioc, var = "growth_period"))
+
+
+# Get predictions across a range of growth_period values
+pred_grid <- ref_grid(mod_HI_clust_step, 
+                      at = list(growth_period = seq(160, 950, length = 100)))
+preds <- as.data.frame(emmeans(pred_grid, ~ Type_manioc * growth_period))
+
+# Plot
+ggplot(preds, aes(x = growth_period, y = emmean, color = Type_manioc, fill = Type_manioc)) +
+  geom_point(data = suivi, 
+             aes(x = growth_period, y = HI, color = Type_manioc),
+             alpha = 0.3, size = 1) +
+  geom_ribbon(aes(ymin = lower.CL, ymax = upper.CL), alpha = 0.2, color = NA) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal() +
+  labs(x = "Growth Period", 
+       y = "Predicted Outcome", 
+       color = "Cluster",
+       title = "Significant Cluster × Growth Period Interaction",
+       subtitle = "Lines show slopes differing by cluster (main effects non-significant)") +
+  theme(legend.position = "bottom")
 
 
 
