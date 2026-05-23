@@ -5,6 +5,8 @@ fviz_mca_var(res.mca, repel=TRUE, invisible= "quali.sup")
 fviz_mca_biplot(res.mca, repel=TRUE, invisible= "quali.sup")
 fviz_screeplot(res.mca, addlabels = TRUE)
 
+print(get_eigenvalue(res.mca))
+
 res.mca$var$contrib
 res.mca$var$coord
 

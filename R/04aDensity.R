@@ -1,6 +1,7 @@
 suivi <- suivi %>% mutate(volume = masse_air - poids_eau)
 suivi <- suivi %>% mutate(spec_grav = masse_air / volume)
 suivi <- suivi %>% mutate(DMC = masse_seche / masse_air)
+suivi <- suivi %>% mutate(DMC_d = masse_seche / masse_air_decong)
 suivi <- suivi %>% mutate(volume_d = masse_air_decong - poids_eau_decong)
 suivi <- suivi %>% mutate(spec_grav_d = masse_air_decong / volume_d)
 
@@ -10,6 +11,22 @@ summary(DMC_reg)
 plot(DMC_reg)
 
 ggplot(suivi, aes(x = spec_grav, y = DMC)) +
+  geom_point() +                       
+  geom_smooth(method = "lm", se = TRUE)
+
+DMC_froz_reg <- lm(DMC_d ~ spec_grav_d, suivi)
+summary(DMC_froz_reg)
+plot(fitted(DMC_froz_reg),rstudent(DMC_froz_reg))
+
+ggplot(suivi, aes(x = spec_grav_d, y = DMC_d)) +
+  geom_point() +                       
+  geom_smooth(method = "lm", se = TRUE)
+
+suivi_densite <- filter(suivi, !is.na(DMC_d))
+suivi_densite$residual_froz <- rstudent(DMC_froz_reg)
+suivi_densite <- filter(suivi_densite, abs(residual_froz) < 1  )
+
+ggplot(suivi_densite, aes(x = spec_grav_d, y = DMC_d)) +
   geom_point() +                       
   geom_smooth(method = "lm", se = TRUE)
 
