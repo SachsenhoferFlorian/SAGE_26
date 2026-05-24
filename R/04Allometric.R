@@ -121,12 +121,12 @@ summary(mod_PR_quadrlog_step_int)
 performance_aic(mod_PR_quadrlog_step_int)
 
 #Model comparison------------------------------------------------
-performance_aic(mod_PR_step)
-performance_aic(mod_PR_quadr_step)
-performance_aic(mod_PR_log_step)
-performance_aic(mod_PR_quadrlog_step)
-performance_aic(mod_PR_quadrlog_step_int)
-
+compare_performance(mod_PR_step,
+                    mod_PR_quadr_step,
+                    mod_PR_log_step,
+                    mod_PR_quadrlog_step,
+                    mod_PR_quadrlog_step_int,
+                    mod_PR_log_15)
 
 
 

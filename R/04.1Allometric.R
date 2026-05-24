@@ -186,7 +186,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_8), Resid = rstudent(mod_PR_
 summary(mod_PR_log_15)
 performance_aic(mod_PR_log_15)
 
-
+compare_performance(mod_PR_log_15, mod_PR_quadrlog_step, mod_PR_log_step)
 
 #Quadratic model------------------------------------------
 
