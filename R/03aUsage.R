@@ -73,12 +73,23 @@ lapply(utili_names, function(utili){
 })
 
 
-
+utilisations_rename <- variete %>% dplyr::select(all_of(utili_names)) %>%
+  rename(
+    Bowo = Utilisation_bowo,
+    Sispa = Utilisation_sispa,
+    Couac = Utilisation_couac,
+    Cachiri = Utilisation_cachiri,
+    Cassave = Utilisation_cassave,
+    Crabio = Utilisation_crabio,
+    Sweet_cassava = Utilisation_cramanioc,
+    Tapioca = Utilisation_tapioca,
+    Domi = Utilisation_domi_afiingi
+  )
 
 
 
 #UpSet diagram
-upset(variete, sets=Utilisation_cols, order.by= "freq")
+upset(utilisations_rename, sets=names(utilisations_rename), order.by= "freq")
 
 
 
@@ -126,8 +137,9 @@ ggplot(variete_alluv1,
 
 
 # ---- Data preparation: explode dummy variables + fractional weights ----
+variete_alluv2 <- variete %>%  mutate(Communaute = factor(Communaute, levels= c("indigenous","bushinengues","other"))) 
 
-variete_alluv2 <- variete %>%  mutate(id = row_number()) %>%
+variete_alluv2 <- variete_alluv2 %>%  mutate(id = row_number()) %>%
   pivot_longer(
     cols = starts_with("Utilisation_"),
     names_to = "usage",
@@ -137,6 +149,7 @@ variete_alluv2 <- variete %>%  mutate(id = row_number()) %>%
   group_by(id) %>%
   mutate(weight = 1 / n()) %>%
   ungroup() %>%
+  
   group_by(cluster, usage, Communaute) %>%
   summarise(n = sum(weight), .groups = "drop")
 
@@ -155,7 +168,8 @@ variete_alluv2 <- variete_alluv2 %>%
       usage == "Utilisation_domi_afiingi" ~ "Domi"
     ),
     levels = c("Cachiri", "Cassave", "Bowo",  "Domi", "Sispa", "Tapioca", "Crabio","Couac","Sweet cassava")
-  ))
+  )) 
+
 # ---- Alluvial plot ----
 
 ggplot(variete_alluv2,
@@ -172,4 +186,6 @@ ggplot(variete_alluv2,
     title = "Alluvial Diagram Variety -> Communauté -> Usage",
     y = "weighted count"
   )
+
+
 

@@ -155,3 +155,12 @@ ft <- counts_sampling_Eth5 %>%
 
 # Save to Word
 save_as_docx(ft, path = "data/presentation/counts_sampling_table.docx")
+
+
+# Create flextable
+ft1 <- div_table %>%
+  flextable() %>%
+  autofit()
+
+# Save to Word
+save_as_docx(ft1, path = "data/presentation/diversity_descriptors.docx")

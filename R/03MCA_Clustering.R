@@ -20,10 +20,16 @@ variete$cluster <- res.hcpc$data.clust$clust
 table(variete$cluster, mca_data_clustered$clust) #Check if clusters were attributed well
 
 
+
 ggplot(data=variete, aes(x=cluster, fill=Commune)) +
   geom_bar()
+
+#used
 ggplot(data=variete, aes(x=Commune, fill=cluster)) +
-  geom_bar()
+  geom_bar() +
+  facet_wrap (~ Intercomm, scales = "free_x")+
+  ylab("Number of accessions")+
+  xlab("Municipality")
 
 ggplot(data=variete, aes(x=cluster, fill=Intercomm)) +
   geom_bar()
@@ -57,8 +63,12 @@ ggplot(data=variete, aes(x=cluster, fill=Farmer)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")
 
+#used
 ggplot(data=variete, aes(x=Communaute, fill=cluster)) +
-  geom_bar()
+  geom_bar()+
+  ylab("Number of accessions")+
+  xlab("Community")
+
 ggplot(data=variete, aes(x=cluster, fill=Communaute)) +
   geom_bar()
 
