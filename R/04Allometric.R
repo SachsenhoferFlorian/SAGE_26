@@ -125,8 +125,7 @@ compare_performance(mod_PR_step,
                     mod_PR_quadr_step,
                     mod_PR_log_step,
                     mod_PR_quadrlog_step,
-                    mod_PR_quadrlog_step_int,
-                    mod_PR_log_15)
+                    mod_PR_quadrlog_step_int)
 
 
 
@@ -148,9 +147,19 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
 
 ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", formula = y ~ x)
 
-emm_clust <- emmeans(mod_clust_full, ~ cluster, type = "response")
+pred_data <- expand.grid(
+  growth_period = seq(min(suivi$growth_period), max(suivi$growth_period), length.out = 100),
+  cluster = unique(suivi$cluster)
+)
+pred_data$PR <- predict(mod_clust_step, newdata = pred_data)
+
+ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
+  geom_point() +
+  geom_line(data = pred_data, linewidth = 1)
+
+emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
 emm_clust
 pairs(emm_clust)
 

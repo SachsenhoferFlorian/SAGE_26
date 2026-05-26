@@ -1,5 +1,5 @@
 #Descriptive statistics--------
-traits <- variete[, c("Type_manioc", "Couleur_racine_enquete", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
+traits <- variete[, c("Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches", "Ramification", "Forme_plante")]
 traits <- traits %>% mutate(across(everything(), as.factor))
 summary(traits)
 
@@ -79,20 +79,105 @@ counts_sampling_Eth2 <- variete %>%
   )
 
 counts_sampling_Eth3 <- variete %>%
-  group_by(Commune) %>%
+  group_by(Intercomm,Commune) %>%
   summarise(
-    Intercomm = first(Intercomm),
     n_variete = n_distinct(Code_var),
     n_farmer = n_distinct(Farmer),
-    F_autoch = n_distinct(Farmer[Communaute == "amerindien"]),
+    F_autoch = n_distinct(Farmer[Communaute == "indigenous"]),
     F_bushi = n_distinct(Farmer[Communaute == "bushinengues"]),
-    F_non = n_distinct(Farmer[Communaute == "non"]),
-    V_autoch = sum(Communaute == "amerindien", na.rm = TRUE),
+    F_non = n_distinct(Farmer[Communaute == "other"]),
+    V_autoch = sum(Communaute == "indigenous", na.rm = TRUE),
     V_bushi = sum(Communaute == "bushinengues", na.rm = TRUE),
-    V_non = sum(Communaute == "non", na.rm = TRUE),
+    V_non = sum(Communaute == "other", na.rm = TRUE),
     alpha = n_variete / n_farmer,
     .groups = "drop"
   )
+
+
+details <- variete %>%
+  group_by(Intercomm, Commune) %>%
+  summarise(
+    n_varieties = n_distinct(Code_var),
+    n_farmers = n_distinct(Farmer),
+    F_ind = n_distinct(Farmer[Communaute == "indigenous"]),
+    F_bushi = n_distinct(Farmer[Communaute == "bushinengues"]),
+    F_other = n_distinct(Farmer[Communaute == "other"]),
+    V_ind = sum(Communaute == "indigenous", na.rm = TRUE),
+    V_bushi = sum(Communaute == "bushinengues", na.rm = TRUE),
+    V_other = sum(Communaute == "other", na.rm = TRUE),
+    alpha = n_varieties / n_farmers,
+    .groups = "drop"
+  )
+
+
+subtotals <- details %>%
+  group_by(Intercomm) %>%
+  summarise(
+    Commune = "Subtotal",
+    across(c(n_varieties, n_farmers, F_ind, F_bushi, F_other,
+             V_ind, V_bushi, V_other), sum),
+    alpha = n_varieties / n_farmers,
+    .groups = "drop"
+  )
+
+
+total <- subtotals %>%
+  summarise(
+    Intercomm = "Total",
+    Commune = "Total",
+    across(c(n_varieties, n_farmers, F_ind, F_bushi, F_other,
+             V_ind, V_bushi, V_other), sum),
+    alpha = n_varieties / n_farmers
+  )
+
+
+counts_sampling_Eth4 <- bind_rows(details, subtotals, total) %>%
+  arrange(Intercomm == "Total", Intercomm, Commune == "Subtotal")
+
+
+
+details5 <- variete %>%
+  group_by(Intercomm, Commune,Communaute) %>%
+  summarise(
+    n_varieties = n_distinct(Code_var),
+    n_farmers = n_distinct(Farmer),
+    V_per_F = n_varieties / n_farmers,
+    .groups = "drop"
+  )
+
+
+subtotals5 <- details5 %>%
+  group_by(Intercomm) %>%
+  summarise(
+    Commune = "Subtotal",
+    across(c(n_varieties, n_farmers), sum),
+    V_per_F = n_varieties / n_farmers,
+    .groups = "drop"
+  )
+
+subtotalsComm5 <- details5 %>%
+  group_by(Communaute) %>%
+  summarise(
+    Intercomm = "Subtotal",
+    across(c(n_varieties, n_farmers), sum),
+    V_per_F = n_varieties / n_farmers,
+    .groups = "drop"
+  ) %>% arrange(desc(V_per_F))
+
+
+total5 <- subtotals5 %>%
+  summarise(
+    Intercomm = "Total",
+    Commune = "Total",
+    across(c(n_varieties, n_farmers), sum),
+    V_per_F = n_varieties / n_farmers
+  ) 
+
+
+counts_sampling_Eth5 <- bind_rows(details5, subtotals5, subtotalsComm5, total5) %>%
+  arrange(Intercomm == "Total", Intercomm, Commune == "Subtotal")
+
+
 
 
 

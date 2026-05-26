@@ -1,43 +1,5 @@
 
-#Calculations--------------
-suivi <- suivi %>% mutate(NLrat0 = N0/L0)
-suivi <- suivi %>% mutate(NLrat1 = N1/L1)
-suivi <- suivi %>% mutate(LLrat= L1/L0)
-suivi <- suivi %>% mutate(NNrat= N1/N0)
-suivi <- suivi %>% mutate(DDrat= D1/D0)
-suivi <- suivi %>% mutate(LDrat0= L0/D0)
-suivi <- suivi %>% mutate(LDrat1= L1/D1)
-suivi <- suivi %>% mutate(HI= PR/(PR+PB))
-#Descriptive Analysis---------------------------------
-suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
-suivi$growth_period <- as.numeric(suivi$growth_period)
-suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
-
-summary(suivi_numeric)
-describe(suivi_numeric)
-
-boxplot(dplyr::select(suivi_numeric, H, L0, L1))
-boxplot(dplyr::select(suivi_numeric, N0, N1))
-boxplot(dplyr::select(suivi_numeric, B0,B1, NR))
-boxplot(dplyr::select(suivi_numeric, D0, D1))
-boxplot(dplyr::select(suivi_numeric, PB, PR))
-
-s_cor_mat <- cor(suivi_numeric, use = "pairwise.complete.obs")
-s_cor_mat
-corrplot(s_cor_mat,
-         method = "color",
-         type = "upper",
-         tl.col = "black",
-         tl.srt = 50,
-         addCoef.col = "black",
-         addCoefasPercent = TRUE) 
-
-#Severity
-mod_Sev <- lm(PR ~ Severite, suivi)
-summary(mod_Sev)
-
 #Modelling Yield Prediction------------------------------
-suivi <- suivi[-58,] # delete NA and biased observation
 suivi <- suivi %>% filter(PR > 0)
 
 #All measured variables
@@ -46,50 +8,6 @@ summary(mod_PR_full)
 plot(fitted(mod_PR_full), rstudent(mod_PR_full))
 check_model(mod_PR_full)
 
-drop1(mod_PR_full, test = "Chisq")
-mod_PR_1 <- update(mod_PR_full, .~. - L1)
-anova(mod_PR_1, mod_PR_full)
-
-drop1(mod_PR_1, test = "Chisq")
-mod_PR_2 <- update(mod_PR_1, .~. - B0)
-anova(mod_PR_2, mod_PR_1)
-
-drop1(mod_PR_2, test = "Chisq")
-mod_PR_3 <- update(mod_PR_2, .~. - N0)
-anova(mod_PR_3, mod_PR_2)
-
-drop1(mod_PR_3, test = "Chisq")
-mod_PR_4 <- update(mod_PR_3, .~. - B1)
-anova(mod_PR_4, mod_PR_3)
-
-drop1(mod_PR_4, test = "Chisq")
-mod_PR_5 <- update(mod_PR_4, .~. - L0)
-anova(mod_PR_5, mod_PR_4)
-
-drop1(mod_PR_5, test = "Chisq")
-mod_PR_6 <- update(mod_PR_5, .~. - L1)
-anova(mod_PR_6, mod_PR_5)
-
-AIC(mod_PR_6)
-drop1(mod_PR_6, test = "Chisq")
-mod_PR_7 <- update(mod_PR_6, .~. - N1)
-anova(mod_PR_7, mod_PR_6)
-
-drop1(mod_PR_7, test = "Chisq")
-mod_PR_8 <- update(mod_PR_7, .~. - D1)   
-anova(mod_PR_8, mod_PR_7)
-AIC(mod_PR_8, mod_PR_7)
-
-plot(fitted(mod_PR_7), rstudent(mod_PR_7))     
-check_model(mod_PR_7)
-
-ggplot(data = data.frame(Fitted = fitted(mod_PR_7), Resid = rstudent(mod_PR_7)),
-       aes(x = Fitted, y = Resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0, color = "red") +
-  labs(title = "Studentized Residuals Plot")
-
-performance_aic(mod_PR_7)
 
 #log transformed
 mod_PR_log_full <- lmer(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period + (1 | ID_Enquete) ,suivi)
@@ -186,81 +104,6 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_8), Resid = rstudent(mod_PR_
 summary(mod_PR_log_15)
 performance_aic(mod_PR_log_15)
 
-compare_performance(mod_PR_log_15, mod_PR_quadrlog_step, mod_PR_log_step)
-
-#Quadratic model------------------------------------------
-
-mod_PR_quadr_full <-lmer(formula = PR ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + (1 | ID_Enquete), data = suivi)
-summary(mod_PR_quadr_full)
-plot(fitted(mod_PR_quadr_full), rstudent(mod_PR_quadr_full))
-check_model(mod_PR_quadr_full)
-
-drop1(mod_PR_quadr_full, test = "Chisq")                        
-mod_PR_quadr_1 <- update(mod_PR_quadr_full, .~. - L0)
-anova(mod_PR_quadr_1, mod_PR_quadr_full)
-
-drop1(mod_PR_quadr_1, test = "Chisq")
-mod_PR_quadr_2 <- update(mod_PR_quadr_1, .~. - I(L0^2))
-anova(mod_PR_quadr_2, mod_PR_quadr_1)
-
-drop1(mod_PR_quadr_2, test = "Chisq")
-mod_PR_quadr_3 <- update(mod_PR_quadr_2, .~. - I(L1^2))
-anova(mod_PR_quadr_3, mod_PR_quadr_2)
-
-drop1(mod_PR_quadr_3, test = "Chisq")
-mod_PR_quadr_4 <- update(mod_PR_quadr_3, .~. - I(B0^2))
-anova(mod_PR_quadr_4, mod_PR_quadr_3)
-
-drop1(mod_PR_quadr_4, test = "Chisq")
-mod_PR_quadr_5 <- update(mod_PR_quadr_4, .~. - B0)
-anova(mod_PR_quadr_5, mod_PR_quadr_4)
-
-drop1(mod_PR_quadr_5, test = "Chisq")
-mod_PR_quadr_6 <- update(mod_PR_quadr_5, .~. - I(B1^2))
-anova(mod_PR_quadr_6, mod_PR_quadr_5)
-
-drop1(mod_PR_quadr_6, test = "Chisq")
-mod_PR_quadr_7 <- update(mod_PR_quadr_6, .~. - N0)
-anova(mod_PR_quadr_7, mod_PR_quadr_6)
-
-drop1(mod_PR_quadr_7, test = "Chisq")
-mod_PR_quadr_8 <- update(mod_PR_quadr_7, .~. - I(N0^2))
-anova(mod_PR_quadr_8, mod_PR_quadr_7)
-
-drop1(mod_PR_quadr_8, test = "Chisq")
-mod_PR_quadr_9 <- update(mod_PR_quadr_8, .~. - D1)
-anova(mod_PR_quadr_9, mod_PR_quadr_8)
-
-drop1(mod_PR_quadr_9, test = "Chisq")
-mod_PR_quadr_10 <- update(mod_PR_quadr_9, .~. - I(D1^2))
-anova(mod_PR_quadr_10, mod_PR_quadr_9)
-
-drop1(mod_PR_quadr_10, test = "Chisq")
-mod_PR_quadr_11 <- update(mod_PR_quadr_10, .~. - B1)
-anova(mod_PR_quadr_11, mod_PR_quadr_10)
-
-drop1(mod_PR_quadr_11, test = "Chisq")
-mod_PR_quadr_12 <- update(mod_PR_quadr_11, .~. - I(H^2))
-anova(mod_PR_quadr_12, mod_PR_quadr_11)
-
-drop1(mod_PR_quadr_12, test = "Chisq")
-mod_PR_quadr_13 <- update(mod_PR_quadr_12, .~. - H)     #AIC is stagnating
-anova(mod_PR_quadr_13, mod_PR_quadr_12)
-
-drop1(mod_PR_quadr_13, test = "Chisq")
-mod_PR_quadr_14 <- update(mod_PR_quadr_13, .~. - L1)
-anova(mod_PR_quadr_14, mod_PR_quadr_13)
-AIC(mod_PR_quadr_14, mod_PR_quadr_13)
-
-drop1(mod_PR_quadr_14, test = "Chisq")                 #all variables signifcant
-
-summary(mod_PR_quadr_14)
-plot(fitted(mod_PR_quadr_14), rstudent(mod_PR_quadr_14))
-check_model(mod_PR_quadr_14)
-
-anova( mod_PR_quadr_14,mod_PR_7)    
-
-
 #Quadratic logistic model------------------------------------------
 
 mod_PR_quadrlog_full <-lmer(formula = log(PR) ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + growth_period + (1 | ID_Enquete), data = suivi)
@@ -339,14 +182,13 @@ check_model(mod_PR_quadrlog_15)
 
 
 #Model comparison------------------------------------------------
-
-AIC(mod_PR_7, mod_PR_quadr_14, mod_PR_log_7, mod_PR_quadrlog_16)
-r.squaredGLMM(mod_PR_7)
-r.squaredGLMM(mod_PR_log_7)
-r.squaredGLMM(mod_PR_quadr_14)
-r.squaredGLMM( mod_PR_quadrlog_16)
-
-anova(mod_PR_quadrlog_16, mod_PR_log_7)
+compare_performance(mod_PR_step,
+                    mod_PR_quadr_step,
+                    mod_PR_log_step,
+                    mod_PR_quadrlog_step,
+                    mod_PR_quadrlog_step_int,
+                    mod_PR_log_15,
+                    mod_PR_quadrlog_15)
 
 
 #Interactions forward testing-------------

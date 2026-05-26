@@ -140,3 +140,18 @@ doc <- read_pptx() %>%
   ph_with(ft3,location = ph_location(left = 5.2, top = 4.2, width = 4.2, height = 3.8))
 
 print(doc, target = "data/presentation/tableaux_pres.pptx")
+
+
+
+#Table printing--------------------------
+
+
+
+# Create flextable
+ft <- counts_sampling_Eth5 %>%
+  flextable() %>%
+  colformat_double(j = "V_per_F", digits = 2) %>%
+  autofit()
+
+# Save to Word
+save_as_docx(ft, path = "data/presentation/counts_sampling_table.docx")

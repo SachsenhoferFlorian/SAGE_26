@@ -10,6 +10,7 @@ source("R/03MCA_Clustering.R")
 source("R/03aUsage.R")
 source("R/04Allometric.R")
 source("R/04aDensity.R")
+source("R/04.1Allometric.R")       #Mixed models
 source("R/04.2AllometricRF.R")     #Random forest prediction and cross validation
 
 
@@ -17,4 +18,4 @@ source("R/03.1MCA_Clustering.R")   #clustering without plant form and branching
 source("R/03.2MCA_Clustering.R")   #clustering with kramanioc as pre-defined cluster
 source("R/03.3FAMD_Clustering.R")  #clustering with colours as continous variables
 source("R/AHC_kmeans.R")           #test of kmeans and AHC
-source("R/04.1Allometric.R")       #Mixed models
+

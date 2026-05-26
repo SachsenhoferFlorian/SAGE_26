@@ -21,6 +21,8 @@ mapping <- c(
   "sainta_georges" = "CCEG"
 )
 
+variete$Intercomm <- mapping[as.character(variete$Commune)]
+
 mapping_rename <- c(
   "saint_laurent_du_maroni" = "SLM",
   "mana" = "Mana",
@@ -34,9 +36,18 @@ mapping_rename <- c(
   "sainta_georges" = "SGO"
 )
 
-variete$Intercomm <- mapping[as.character(variete$Commune)]
-
 variete$Commune <- mapping_rename[as.character(variete$Commune)]
+
+mapping_rename1 <- c(
+  "amerindien" = "indigenous",
+  "bushinengues" = "bushinengues",
+  "non" = "other"
+)
+
+variete$Communaute <- mapping_rename1[as.character(variete$Communaute)]
+
+
+
 
 variete$mature_class  <- cut(variete$Mois_debut_recolte,
                              breaks = c(-Inf, 7, 11, Inf),
