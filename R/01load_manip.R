@@ -96,7 +96,9 @@ suivi$branche1  <- as.numeric(suivi$L1 > 0)
 
 mca_data <- variete[, c("Code_var", "Commune", "Intercomm", "Farmer", "Communaute", "Cultivation_depuis", "Type_manioc", "Couleur_feuilles_ap", "Pubescence", "Couleur_nervure", "Couleur_petiole", "Forme_lobes", "Nombre_lobes", "Couleur_tige", "Couleur_branches","Ramification", "Forme_plante")]
 #mca_data <- mca_data %>%mutate(across(everything(), as.factor))
-res.mca <- MCA(mca_data,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
+res.mca <- MCA(mca_data,ncp=20,quali.sup = c(1,2,3,4,5,6), graph = FALSE)
+
+print(get_eigenvalue(res.mca))
 
 res.hcpc <- HCPC(res.mca, nb.clust = -1) 
 res.hcpc$desc.var
@@ -112,3 +114,4 @@ suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
 #Growth period
 suivi$growth_period <- suivi$Date - suivi$Date_plante
 suivi_numeric$growth_period <- suivi$growth_period
+

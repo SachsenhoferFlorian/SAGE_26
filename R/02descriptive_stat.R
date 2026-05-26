@@ -81,6 +81,7 @@ counts_sampling_Eth2 <- variete %>%
 counts_sampling_Eth3 <- variete %>%
   group_by(Commune) %>%
   summarise(
+    Intercomm = first(Intercomm),
     n_variete = n_distinct(Code_var),
     n_farmer = n_distinct(Farmer),
     F_autoch = n_distinct(Farmer[Communaute == "amerindien"]),
