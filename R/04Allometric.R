@@ -1,3 +1,8 @@
+Suivi_summary <- suivi %>% group_by(Farmer) %>%
+        summarise(
+        Accessions = n_distinct(Code_Var),
+        Plants = n()
+      ) %>% adorn_totals(name= "Totals")
 
 #Calculations--------------
 suivi <- suivi %>% mutate(NLrat0 = N0/L0)
@@ -14,7 +19,7 @@ suivi$growth_period <- as.numeric(suivi$growth_period)
 suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
 suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake
 suivi_numeric <- suivi_numeric %>% filter(N0<150 & !is.na(N0))      # deleting observation with mistake
-suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche))
+suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche, masse_air_cong,masse_air_decong,poids_eau_cong,poids_eau_decong))
 
 
 summary(suivi_numeric)
@@ -30,7 +35,7 @@ s_cor_mat <- cor(suivi_numeric, use = "pairwise.complete.obs")
 s_cor_mat
 corrplot(s_cor_mat,
          method = "color",
-         type = "upper",
+         type = "full",
          tl.col = "black",
          tl.srt = 50,
          addCoef.col = "black",
@@ -114,6 +119,7 @@ mod_PR_quadrlog_step <- step(mod_PR_quadrlog_full)
 summary(mod_PR_quadrlog_step)
 plot(fitted(mod_PR_quadrlog_step), rstudent(mod_PR_quadrlog_step))
 check_model(mod_PR_quadrlog_step)
+performance_aic(mod_PR_quadrlog_step)
 
 #adding of relevant interactions
 mod_PR_quadrlog_step_int <- lm(formula = log(PR) ~ I(L1^2) + I(N0^2) + N0 + I(D1^2) + D1 + I(D0^2) + I(N1^2) + N1 + B0 + D0:B0 + L0:B0, data = suivi)
@@ -149,15 +155,6 @@ ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y ~ x)
 
-pred_data <- expand.grid(
-  growth_period = seq(min(suivi$growth_period), max(suivi$growth_period), length.out = 100),
-  cluster = unique(suivi$cluster)
-)
-pred_data$PR <- predict(mod_clust_step, newdata = pred_data)
-
-ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
-  geom_point() +
-  geom_line(data = pred_data, linewidth = 1)
 
 emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
 emm_clust

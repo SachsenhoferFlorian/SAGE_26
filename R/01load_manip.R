@@ -4,6 +4,13 @@ variete <- variete[!is.na(variete$Couleur_petiole), ]
 rownames(variete) <- variete$ID
 variete$ID_Enquete <- as.factor(variete$ID_Enquete)
 variete$Farmer <- sprintf("F%02d", as.numeric(factor(variete$ID_Enquete)))
+#double of one farmer: correction
+variete <- variete %>%
+  mutate(Farmer = ifelse(
+    ID_Enquete == "614046994",
+    Farmer[ID_Enquete == "656301951"][1],
+    Farmer
+  ))
 
 variete$Date <- as.Date(variete$Date,origin = "1899-12-30")
 variete$Date_plante <- as.Date(variete$Date_plante,origin = "1899-12-30")

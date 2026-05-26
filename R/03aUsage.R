@@ -180,11 +180,11 @@ ggplot(variete_alluv2,
   geom_alluvium(aes(fill = cluster), alpha = 0.8, lode.guidance = "forward") +
   geom_stratum(width = 0.3) +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
-  scale_x_discrete(limits = c("Clust_Variete",  "Communauté", "Usages")) +
+  scale_x_discrete(limits = c("Cluster",  "Community", "Uses")) +
   theme_minimal() +
   labs(
-    title = "Alluvial Diagram Variety -> Communauté -> Usage",
-    y = "weighted count"
+    title = "Alluvial Diagram Variety cluster -> Community -> Uses",
+    y = "weighted count of accessions"
   )
 
 
