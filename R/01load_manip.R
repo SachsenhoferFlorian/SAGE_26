@@ -80,7 +80,7 @@ variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation
 suivi = read.xlsx("data/raw/SuiviAccSAGE.xlsx", sheet = 1)
 suivi$ID <- as.character(suivi$ID)
 suivi$s_ID <- as.character(suivi$s_ID)
-suivi$Date_enquete <- as.Date(suivi$Date_enquete,origin = "1899-12-30")
+suivi$Date_enquete <- as.Date(as.numeric(suivi$Date_enquete),origin = "1899-12-30")
 suivi <- rename(suivi, PB = poids_biomasse_sur_sol, PR= poids_total_racines, NR=nombre_racines)
 
 
@@ -96,7 +96,9 @@ mapping_severite <- c(
  )
 
 suivi$Severite <- mapping_severite[as.character(suivi$Severite)]
+suivi$Severite_marqu <- mapping_severite[as.character(suivi$Severite_marqu)]
 suivi$Severite <- as.numeric(suivi$Severite)
+suivi$Severite_marqu <- as.numeric(suivi$Severite_marqu)
 
 variete$Kramanioc <-  1-(as.numeric(as.factor(variete$Type_manioc))-1)
 Utilisation_cols <- c( "Utilisation_bowo",	"Utilisation_cachiri",	"Utilisation_cassave",	"Utilisation_couac", "Utilisation_crabio", "Utilisation_domi_afiingi",	"Utilisation_sispa", "Utilisation_tapioca",	"Utilisation_cramanioc")
@@ -130,6 +132,8 @@ variete$cluster <- res.hcpc$data.clust$clust
 suivi <- suivi %>% left_join(variete, by = c("Code_Var" = "Code_var"))
 
 #Growth period
-suivi$growth_period <- suivi$Date - suivi$Date_plante
+suivi$growth_period <- suivi$Date_enquete - suivi$Date_plante
 suivi_numeric$growth_period <- suivi$growth_period
+
+suivi$delta_Enqu <- suivi$Date_enquete - suivi$Date
 

@@ -52,14 +52,14 @@ corrplot(s_cor_mat,
          addCoefasPercent = TRUE) 
 
 #Severity
-mod_Sev <- lm(PR ~ Severite, suivi)
+mod_Sev <- lm(PR ~ Severite_cum_percent, suivi)
 summary(mod_Sev)
 
 #Modelling Yield Prediction------------------------------
 suivi <- suivi %>% filter(PR > 0)
 
 #All measured variables
-mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite+ growth_period,suivi)
+mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite_cum_percent+ growth_period,suivi)
 summary(mod_PR_full)
 plot(fitted(mod_PR_full), rstudent(mod_PR_full))
 check_model(mod_PR_full)
@@ -79,7 +79,7 @@ summary(mod_PR_step)
 performance_aic(mod_PR_step)
 
 #log transformed
-mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period ,suivi)
+mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite_cum + growth_period ,suivi)
 summary(mod_PR_log_full)
 plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
 check_model(mod_PR_log_full)
