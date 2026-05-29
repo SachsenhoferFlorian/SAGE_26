@@ -164,3 +164,63 @@ ft1 <- div_table %>%
 
 # Save to Word
 save_as_docx(ft1, path = "data/presentation/diversity_descriptors.docx")
+
+
+
+
+
+
+usage_summary <- lapply(seq_along(utili_names), function(i) {
+  usage_name <- names(utilisations_rename)[i]
+  original_var <- utili_names[i]
+  data.frame(
+    Use = usage_name,
+    Indigenous = sum(variete$Communaute == "indigenous" & variete[[original_var]] == 1, na.rm = TRUE),
+    Bushinengues = sum(variete$Communaute == "bushinengues" & variete[[original_var]] == 1, na.rm = TRUE),
+    Other = sum(variete$Communaute == "other" & variete[[original_var]] == 1, na.rm = TRUE)
+  )
+}) %>%
+  bind_rows() %>%
+  mutate(Total = Indigenous + Bushinengues + Other) %>%
+  arrange(desc(Total))
+
+# View the table
+print(usage_summary)
+
+# Load libraries
+library(flextable)
+library(officer)
+library(dplyr)
+library(tidyr)
+
+# Create the summary table (dynamic version)
+usage_summary <- lapply(seq_along(utili_names), function(i) {
+  usage_name <- names(utilisations_rename)[i]
+  original_var <- utili_names[i]
+  
+  tab <- table(variete$Communaute, variete[[original_var]] == "Oui")
+  
+  result <- as.data.frame.matrix(tab)
+  result$Usage <- usage_name
+  result$Community <- rownames(result)
+  result <- result[, c("Usage", "Community", "TRUE")]
+  names(result)[3] <- "Count"
+  
+  return(result)
+}) %>%
+  bind_rows() %>%
+  pivot_wider(
+    names_from = Community,
+    values_from = Count,
+    values_fill = 0
+  ) %>%
+  mutate(Total = rowSums(select(., -Usage))) %>%
+  arrange(desc(Total))
+
+# Create flextable
+ft <- flextable(usage_summary)
+
+# Export to Word
+doc <- read_docx()
+doc <- body_add_flextable(doc, ft)
+print(doc, target = "data/presentation/usage_summary.docx")

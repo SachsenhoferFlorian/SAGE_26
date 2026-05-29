@@ -6,7 +6,16 @@ Suivi_summary <- suivi %>% group_by(Farmer) %>%
 
 
 
+suivi <- suivi %>% mutate(symptom = ifelse(Severite == 0, 0, 1),
+                          symptom_marqu = ifelse(Severite_marqu== 0, 0, 1))
+describe(dplyr::select(suivi, c("symptom","symptom_marqu")))
+table(suivi$symptom)
+table(suivi$symptom_marqu)
+
+
+
 #Calculations--------------
+#Calcultions of allometric ratios
 suivi <- suivi %>% mutate(NLrat0 = N0/L0)
 suivi <- suivi %>% mutate(NLrat1 = N1/L1)
 suivi <- suivi %>% mutate(LLrat= L1/L0)
@@ -16,6 +25,8 @@ suivi <- suivi %>% mutate(LDrat0= L0/D0)
 suivi <- suivi %>% mutate(LDrat1= L1/D1)
 suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 
+
+#Calculations for Severity
 suivi <- suivi %>% mutate(Sev_diff = Severite-Severite_marqu)
 suivi <- suivi %>% mutate(Sev_diff = ifelse(Sev_diff <= 0, 10, Sev_diff))
 suivi <- suivi %>% mutate(k= Sev_diff/(as.numeric(delta_Enqu)))
@@ -23,13 +34,15 @@ suivi <- suivi %>% mutate(deltaT_infect= Sev_diff/k)
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
 
+
+
 #Descriptive Analysis---------------------------------
 suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
 suivi$growth_period <- as.numeric(suivi$growth_period)
 suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
+suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche, masse_air_cong,masse_air_decong,poids_eau_cong,poids_eau_decong))
 suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake
 suivi_numeric <- suivi_numeric %>% filter(N0<150 & !is.na(N0))      # deleting observation with mistake
-suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche, masse_air_cong,masse_air_decong,poids_eau_cong,poids_eau_decong))
 
 
 summary(suivi_numeric)
@@ -52,14 +65,20 @@ corrplot(s_cor_mat,
          addCoefasPercent = TRUE) 
 
 #Severity
-mod_Sev <- lm(PR ~ Severite, suivi)
+mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+plot(fitted(mod_Sev), rstudent(mod_Sev))
+mod_Sev <- lm(log(PR) ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
+
+mod_Sev_step <- step(mod_Sev)
+summary(mod_Sev_step)
 
 #Modelling Yield Prediction------------------------------
 suivi <- suivi %>% filter(PR > 0)
 
 #All measured variables
-mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite+ growth_period,suivi)
+mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite_cum+ growth_period,suivi)
 summary(mod_PR_full)
 plot(fitted(mod_PR_full), rstudent(mod_PR_full))
 check_model(mod_PR_full)
@@ -79,7 +98,7 @@ summary(mod_PR_step)
 performance_aic(mod_PR_step)
 
 #log transformed
-mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period ,suivi)
+mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite_cum + growth_period ,suivi)
 summary(mod_PR_log_full)
 plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
 check_model(mod_PR_log_full)
@@ -147,13 +166,14 @@ compare_performance(mod_PR_step,
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
 
-mod_clust_full <- lm(PR ~  cluster*growth_period + Severite ,suivi)
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite ,suivi)
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
 summary(mod_clust_step)
+anova(mod_clust_step)
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_clust_step)),   #student plot
        aes(x = Fitted, y = Resid)) +
@@ -163,17 +183,26 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
 
 ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x)
+  geom_parallel_slopes(formula = y ~ x)
 
 
 emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
 emm_clust
 pairs(emm_clust)
+cld_clust <- cld(emm_clust, Letters = letters)
+cld_clust
+
+ggplot(as.data.frame(cld_clust),
+       aes(x = cluster, y = response)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 
-mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite  ,suivi)
+
+mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_cum  ,suivi)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
-mod_typ_full <- lm(log(PR) ~  cluster*growth_period + Type_manioc*growth_period + Severite  ,suivi)
+mod_typ_full <- lm(log(PR) ~  cluster*growth_period + Type_manioc*growth_period + Severite_cum  ,suivi)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
 summary(mod_typ_full)
 
@@ -254,8 +283,10 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
+#Modelling Severity----------
 
-
+mod_Sev_clust <- lm(Severite_cum ~ cluster*growth_period,suivi)
+anova(mod_Sev_clust)
 
 
 
@@ -277,12 +308,15 @@ ggplot(filter(suivi, N1 > 0), aes(x = HI, y =DDrat)) +
 
 
 #on variety clusters
-mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite  , suivi)
+mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite_cum  , suivi)
+plot(fitted(mod_HI_clust), rstudent(mod_HI_clust))
 check_model(mod_HI_clust)
 anova(mod_HI_clust)
-anova(mod_HI_clust_step)
+summary(mod_HI_clust)
+
 
 mod_HI_clust_step <- step(mod_HI_clust)
+anova(mod_HI_clust_step)
 plot(fitted(mod_HI_clust_step), rstudent(mod_HI_clust_step))
 summary(mod_HI_clust_step)
 anova(mod_HI_clust_step)

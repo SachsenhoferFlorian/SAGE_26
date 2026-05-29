@@ -51,15 +51,21 @@ corrplot(s_cor_mat,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
 
-#Severity
-mod_Sev <- lm(PR ~ Severite_cum_percent, suivi)
-summary(mod_Sev)
-
 #Modelling Yield Prediction------------------------------
 suivi <- suivi %>% filter(PR > 0)
 
+#Severity
+mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+plot(fitted(mod_Sev), rstudent(mod_Sev))
+mod_Sev <- lm(log(PR) ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+plot(fitted(mod_Sev), rstudent(mod_Sev))
+summary(mod_Sev)
+
+mod_Sev_step <- step(mod_Sev)
+summary(mod_Sev_step)
+
 #All measured variables
-mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite_cum_percent+ growth_period,suivi)
+mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite_cum + growth_period,suivi)
 summary(mod_PR_full)
 plot(fitted(mod_PR_full), rstudent(mod_PR_full))
 check_model(mod_PR_full)
@@ -79,7 +85,7 @@ summary(mod_PR_step)
 performance_aic(mod_PR_step)
 
 #log transformed
-mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite_cum + growth_period ,suivi)
+mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 + Severite_cum_percent+ growth_period ,suivi)
 summary(mod_PR_log_full)
 plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
 check_model(mod_PR_log_full)
@@ -119,7 +125,7 @@ AIC(mod_PR_quadr_step)
 
 #Quadratic logistic model
 
-mod_PR_quadrlog_full <-lm(formula = log(PR) ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite + growth_period, data = suivi)
+mod_PR_quadrlog_full <-lm(formula = log(PR) ~ I(L1^2) + L1 + I(N0^2) + N0 + I(D1^2) + D1  + I(H^2) + H + I(L0^2) + L0 + I(D0^2) + D0 + I(N1^2) + N1 + B0 + I(B0^2) + B1 + I(B1^2) + Severite_cum_percent + growth_period, data = suivi)
 summary(mod_PR_quadrlog_full)
 plot(fitted(mod_PR_quadrlog_full), rstudent(mod_PR_quadrlog_full))
 check_model(mod_PR_quadrlog_full)
@@ -147,9 +153,9 @@ compare_performance(mod_PR_step,
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
 
-mod_clust_full <- lm(PR ~  cluster*growth_period + Severite ,suivi)
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite ,suivi)
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
@@ -277,12 +283,14 @@ ggplot(filter(suivi, N1 > 0), aes(x = HI, y =DDrat)) +
 
 
 #on variety clusters
-mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite  , suivi)
+mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite_cum_percent  , suivi)
 check_model(mod_HI_clust)
 anova(mod_HI_clust)
-anova(mod_HI_clust_step)
+
 
 mod_HI_clust_step <- step(mod_HI_clust)
+anova(mod_HI_clust_step)
+
 plot(fitted(mod_HI_clust_step), rstudent(mod_HI_clust_step))
 summary(mod_HI_clust_step)
 anova(mod_HI_clust_step)
