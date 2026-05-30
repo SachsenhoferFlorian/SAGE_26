@@ -27,6 +27,9 @@ suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 
 
 #Calculations for Severity
+suivi <- suivi %>% mutate(growth_period_marqu = Date_enquete - delta_Enqu)
+suivi <- suivi %>% mutate(delta_Enqu = as.numeric(delta_Enqu),
+                          growth_period_marqu = as.numeric(growth_period_marqu))
 suivi <- suivi %>% mutate(Sev_diff = Severite-Severite_marqu)
 suivi <- suivi %>% mutate(Sev_diff = ifelse(Sev_diff <= 0, 10, Sev_diff))
 suivi <- suivi %>% mutate(k= Sev_diff/(as.numeric(delta_Enqu)))
@@ -35,7 +38,7 @@ avg_k <- suivi %>%
           summarise(mean_k = mean(k)) %>%
           pull(mean_k)
 suivi <- suivi %>% mutate(k = ifelse(as.numeric(delta_Enqu) < 30, avg_k, k))
-suivi <- suivi %>% mutate(deltaT_infect= Sev_diff/k)
+suivi <- suivi %>% mutate(deltaT_infect= Severite/k)
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
 
@@ -68,11 +71,12 @@ corrplot(s_cor_mat,
          tl.srt = 50,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
+suivi <- suivi %>% filter(PR > 0)
 
 #Severity
 mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
-mod_Sev <- lm(log(PR) ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+mod_Sev <- lm(log(PR) ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent  + growth_period, suivi)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
 
@@ -80,10 +84,10 @@ mod_Sev_step <- step(mod_Sev)
 summary(mod_Sev_step)
 
 #Modelling Yield Prediction------------------------------
-suivi <- suivi %>% filter(PR > 0)
+
 
 #All measured variables
-mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite_cum+ growth_period,suivi)
+mod_PR_full <- lm(PR ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1+ B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1+ Severite + growth_period,suivi)
 summary(mod_PR_full)
 plot(fitted(mod_PR_full), rstudent(mod_PR_full))
 check_model(mod_PR_full)
@@ -103,7 +107,7 @@ summary(mod_PR_step)
 performance_aic(mod_PR_step)
 
 #log transformed
-mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite_cum + growth_period ,suivi)
+mod_PR_log_full <- lm(log(PR) ~ H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period ,suivi)
 summary(mod_PR_log_full)
 plot(fitted(mod_PR_log_full), rstudent(mod_PR_log_full))
 check_model(mod_PR_log_full)
@@ -171,9 +175,9 @@ compare_performance(mod_PR_step,
 
 #Modelling yield prediction with growth period and type of manioc / variety cluster------------
 
-mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum ,suivi)
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum ,suivi)
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
@@ -290,11 +294,12 @@ ggplot(as.data.frame(cld_clust_mm),
 
 #Modelling Severity----------
 
-mod_Sev_clust <- lm(Severite_cum ~ cluster+growth_period,suivi)
+
+mod_Sev_clust <- lm(Severite_marqu ~ growth_period_marqu +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-ggplot(suivi, aes(x = growth_period, y = Severite_cum, color = cluster)) +
+ggplot(suivi, aes(x = growth_period, y = Severite_marqu, color = cluster)) +
   geom_point() +
   geom_smooth(method = "lm")
 
@@ -312,6 +317,16 @@ anova(mod_k_clust)
 summary(mod_k_clust)
 
 summary(suivi$k)
+
+severity_df <- suivi %>%
+  pivot_longer(cols = c(Severite, Severite_marqu),
+               names_to = "Sev_col",
+               values_to = "Sev")
+
+severity_df <- severity_df %>% mutate(gp_sev= ifelse(Sev_col=="Severite",growth_period, growth_period_marqu))
+
+mod_sev_separate <- lm(Sev ~ cluster + gp_sev, severity_df)
+anova(mod_sev_separate)
 
 #Modelling Harvest Index------------------------
 
