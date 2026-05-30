@@ -31,15 +31,17 @@ suivi <- suivi %>% mutate(growth_period_marqu = Date_enquete - delta_Enqu)
 suivi <- suivi %>% mutate(delta_Enqu = as.numeric(delta_Enqu),
                           growth_period_marqu = as.numeric(growth_period_marqu))
 suivi <- suivi %>% mutate(Sev_diff = Severite-Severite_marqu)
-suivi <- suivi %>% mutate(Sev_diff = ifelse(Sev_diff <= 0, 10, Sev_diff))
+suivi <- suivi %>% mutate(Sev_diff = ifelse(Sev_diff <= 0, 10, Sev_diff))  #no change in severity ->  10 percent points change is assumed
 suivi <- suivi %>% mutate(k= Sev_diff/(as.numeric(delta_Enqu)))
-avg_k <- suivi %>%
+avg_k <- suivi %>%                                                         #observations with in-between time less than a month take average k
           filter(as.numeric(delta_Enqu) > 30) %>%
           summarise(mean_k = mean(k)) %>%
           pull(mean_k)
 suivi <- suivi %>% mutate(k = ifelse(as.numeric(delta_Enqu) < 30, avg_k, k))
 suivi <- suivi %>% mutate(deltaT_infect= Severite/k)
+#suivi <- suivi %>% mutate(deltaT_infect = ifelse(deltaT_infect > growth_period, growth_period, deltaT_infect))
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
+#suivi <- suivi %>% mutate(Severite_cum = ifelse(deltaT_infect > growth_period, Severite_cum - (((as.numeric(deltaT_infect-growth_period))^2)*k)/2 , Severite_cum))
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
 
 
@@ -76,7 +78,7 @@ suivi <- suivi %>% filter(PR > 0)
 #Severity
 mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
-mod_Sev <- lm(log(PR) ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent  + growth_period, suivi)
+mod_Sev <- lm(log(PR) ~   Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
 
@@ -293,7 +295,9 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 #Modelling Severity----------
-
+mod_Sev_clust <- lm(Severite_cum_percent ~ cluster,suivi)
+anova(mod_Sev_clust)
+summary(mod_Sev_clust)
 
 mod_Sev_clust <- lm(Severite_marqu ~ growth_period_marqu +cluster,suivi)
 anova(mod_Sev_clust)
@@ -327,6 +331,7 @@ severity_df <- severity_df %>% mutate(gp_sev= ifelse(Sev_col=="Severite",growth_
 
 mod_sev_separate <- lm(Sev ~ cluster + gp_sev, severity_df)
 anova(mod_sev_separate)
+summary(mod_sev_separate)
 
 #Modelling Harvest Index------------------------
 

@@ -22,13 +22,6 @@ ggplot(suivi, aes(x = spec_grav_d, y = DMC_d)) +
   geom_point() +                       
   geom_smooth(method = "lm", se = TRUE)
 
-suivi_densite <- filter(suivi, !is.na(DMC_d))
-suivi_densite$residual_froz <- rstudent(DMC_froz_reg)
-suivi_densite <- filter(suivi_densite, abs(residual_froz) < 1  )
-
-ggplot(suivi_densite, aes(x = spec_grav_d, y = DMC_d)) +
-  geom_point() +                       
-  geom_smooth(method = "lm", se = TRUE)
 
 #Values of frozen roots
 suivi <- suivi %>% mutate(spec_grav = ifelse(is.na(spec_grav), spec_grav_d, spec_grav ))
@@ -37,6 +30,7 @@ suivi <- suivi %>% mutate(frozen = ifelse(is.na(volume_d), 0, 1))
 mod_froz <- lm(spec_grav ~ frozen, suivi)
 anova(mod_froz)
 
+#correction due to water loss by freezing and thawing
 emm_froz <- emmeans(mod_froz, ~ frozen)
 pairs(emmeans(mod_froz, ~ frozen))
 ratio_froz <- (emm_froz@bhat[2]+emm_froz@bhat[1]) / emm_froz@bhat[1] 
@@ -52,21 +46,43 @@ suivi <- suivi %>% mutate(DM_harvest = PR*DMC_pre)
 
 
 #Models
-PR_DMC_mod <- lm(PR ~ DMC_pre, suivi)
+PR_DMC_mod <- lm(DMC_pre ~ PR, suivi)
 summary(PR_DMC_mod)
 
-DMC_sev_mod <- lm(DMC_pre ~ Severite, suivi)
+GP_DMC_mod <- lm(DMC_pre ~ growth_period, suivi)
+summary(GP_DMC_mod)
+
+#Modelling Severité---------
+DMC_sev_mod <- lm(DMC_pre ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent, suivi)
 summary(DMC_sev_mod)
 
-DMC_farm_mod <- lm(DMC_pre ~ ID_Enquete, suivi)
-anova(DMC_farm_mod)
+DMC_sev_mod_step <- step(DMC_sev_mod)
+summary(DMC_sev_mod_step)
+
+DMC_sev_mod2 <- lm(DMC_pre ~  Severite_cum + Severite_cum_percent, suivi)
+DMC_sev_mod2_step <- step(DMC_sev_mod2)
+summary(DMC_sev_mod2_step)
 
 
-DMC_var_mod <- lm(DMC_pre ~ cluster,suivi)
+#Modelling Cluster differences
+DMC_var_mod <- lm(DMC_pre ~  Severite_cum + cluster,suivi) 
 anova(DMC_var_mod)
 emm_DMC_var <- emmeans(DMC_var_mod, ~ cluster)
 emm_DMC_var
 pairs(emm_DMC_var)
+cld_clustDMC <- cld(emm_DMC_var, Letters = letters)
+cld_clustDMC
+
+ggplot(as.data.frame(cld_clustDMC),
+       aes(x = cluster,y=emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+ggplot(suivi, aes(x = Severite_cum, y = DMC_pre, color = cluster)) +
+  geom_point() +
+  geom_parallel_slopes(formula = y ~ x)
+
 
 DMC_var_mod <- lm(DMC_pre ~ Type_manioc,suivi)
 anova(DMC_var_mod)
