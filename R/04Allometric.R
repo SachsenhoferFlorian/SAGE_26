@@ -30,6 +30,11 @@ suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 suivi <- suivi %>% mutate(Sev_diff = Severite-Severite_marqu)
 suivi <- suivi %>% mutate(Sev_diff = ifelse(Sev_diff <= 0, 10, Sev_diff))
 suivi <- suivi %>% mutate(k= Sev_diff/(as.numeric(delta_Enqu)))
+avg_k <- suivi %>%
+          filter(as.numeric(delta_Enqu) > 30) %>%
+          summarise(mean_k = mean(k)) %>%
+          pull(mean_k)
+suivi <- suivi %>% mutate(k = ifelse(as.numeric(delta_Enqu) < 30, avg_k, k))
 suivi <- suivi %>% mutate(deltaT_infect= Sev_diff/k)
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
@@ -285,10 +290,28 @@ ggplot(as.data.frame(cld_clust_mm),
 
 #Modelling Severity----------
 
-mod_Sev_clust <- lm(Severite_cum ~ cluster*growth_period,suivi)
+mod_Sev_clust <- lm(Severite_cum ~ cluster+growth_period,suivi)
 anova(mod_Sev_clust)
+summary(mod_Sev_clust)
+
+ggplot(suivi, aes(x = growth_period, y = Severite_cum, color = cluster)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+ggplot(suivi, aes(x = growth_period, y = Severite_cum, color = cluster)) +
+  geom_point() +
+  geom_parallel_slopes(formula = y ~ x)
+
+emt_Sevclust <- emtrends(mod_Sev_clust, ~ cluster, var = "growth_period")  
+emt_Sevclust
+pairs(emt_Sevclust)
 
 
+mod_k_clust <- lm(k ~ cluster+growth_period,filter(suivi, as.numeric(delta_Enqu)> 30))
+anova(mod_k_clust)
+summary(mod_k_clust)
+
+summary(suivi$k)
 
 #Modelling Harvest Index------------------------
 
