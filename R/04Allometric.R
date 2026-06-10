@@ -45,6 +45,14 @@ suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
 
 
+#Roots and clusters---------
+table(suivi$cluster, suivi$Couleur_rac_in)
+table(suivi$cluster, suivi$Couleur_rac_ex)
+table(suivi$cluster, suivi$Couleur_rac_cort)
+table(suivi$cluster, suivi$Forme_rac)
+table(suivi$cluster, suivi$Tex_epid)
+table(suivi$Couleur_rac_in)
+
 
 #Descriptive Analysis---------------------------------
 suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
@@ -179,7 +187,7 @@ compare_performance(mod_PR_step,
 
 mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
+mod_clust_full <- lm(log(PR) ~  cluster+growth_period + Severite_cum_percent + Severite_marqu ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
@@ -211,9 +219,10 @@ ggplot(as.data.frame(cld_clust),
 
 
 
-mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_cum  ,suivi)
+mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_marqu + Severite_cum_percent ,suivi)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
-mod_typ_full <- lm(log(PR) ~  cluster*growth_period + Type_manioc*growth_period + Severite_cum  ,suivi)
+mod_typ_full <- lm(log(PR) ~  growth_period + Severite_marqu + Severite_cum_percent + cluster+ Type_manioc  ,suivi)
+anova(mod_typ_full)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
 summary(mod_typ_full)
 
@@ -222,7 +231,7 @@ check_model(mod_typ_step)
 summary(mod_typ_step)
 
 
-emm_type <- emmeans(mod_typ_step, ~ Type_manioc, at = list(growth_period = 360),type = "response")    #  ,type = "response"
+emm_type <- emmeans(mod_typ_step, ~ Type_manioc, type="response") 
 emm_type
 pairs(emm_type)
 cld_type <- cld(emm_type, Letters = letters)
@@ -295,13 +304,22 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
 #Modelling Severity----------
-mod_Sev_clust <- lm(Severite_cum_percent ~ cluster,suivi)
+mod_Sev_clust <- lm(Severite_cum_percent ~ growth_period + cluster,suivi)
+anova(mod_Sev_clust)
+summary(mod_Sev_clust)
+
+mod_Sev_clust <- lm(Severite ~ growth_period +cluster,suivi)
+anova(mod_Sev_clust)
+summary(mod_Sev_clust)
+
+mod_Sev_clust <- lm(Severite_cum ~ growth_period_marqu +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
 mod_Sev_clust <- lm(Severite_marqu ~ growth_period_marqu +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
+
 
 ggplot(suivi, aes(x = growth_period, y = Severite_marqu, color = cluster)) +
   geom_point() +
@@ -311,12 +329,27 @@ ggplot(suivi, aes(x = growth_period, y = Severite_cum, color = cluster)) +
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)
 
-emt_Sevclust <- emtrends(mod_Sev_clust, ~ cluster, var = "growth_period")  
+emm_Sev_clust <- emmeans(mod_Sev_clust, ~ cluster)
+emm_Sev_clust
+pairs(emm_Sev_clust)
+cld_Sev_clust <- cld(emm_Sev_clust, Letters = letters)
+cld_Sev_clust
+
+
+ggplot(as.data.frame(cld_Sev_clust),
+       aes(x = cluster, y = emmean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_text(aes(label= .group, y = upper.CL), size = 6)
+
+
+
+emt_Sevclust <- emtrends(mod_Sev_clust, ~ cluster, var = "growth_period_marqu")  
 emt_Sevclust
 pairs(emt_Sevclust)
 
 
-mod_k_clust <- lm(k ~ cluster+growth_period,filter(suivi, as.numeric(delta_Enqu)> 30))
+mod_k_clust <- lm(k ~ growth_period + cluster,filter(suivi, as.numeric(delta_Enqu)> 30))
 anova(mod_k_clust)
 summary(mod_k_clust)
 
@@ -329,7 +362,7 @@ severity_df <- suivi %>%
 
 severity_df <- severity_df %>% mutate(gp_sev= ifelse(Sev_col=="Severite",growth_period, growth_period_marqu))
 
-mod_sev_separate <- lm(Sev ~ cluster + gp_sev, severity_df)
+mod_sev_separate <- lm(Sev ~  gp_sev + cluster, severity_df)
 anova(mod_sev_separate)
 summary(mod_sev_separate)
 
