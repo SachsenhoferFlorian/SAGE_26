@@ -49,43 +49,43 @@ anova(mod_PR_log_7, mod_PR_log_6)
 performance_aic(mod_PR_log_7)
 
 drop1(mod_PR_log_7, test = "Chisq")
-mod_PR_log_8 <- update(mod_PR_log_7, .~. - H)
+mod_PR_log_8 <- update(mod_PR_log_7, .~. - L1:B1)
 anova(mod_PR_log_8, mod_PR_log_7)
 performance_aic(mod_PR_log_8)
 
 drop1(mod_PR_log_8, test = "Chisq")
-mod_PR_log_9 <- update(mod_PR_log_8, .~. - L0:B0)
+mod_PR_log_9 <- update(mod_PR_log_8, .~. - L1)
 anova(mod_PR_log_9, mod_PR_log_8)
 performance_aic(mod_PR_log_9)
 
 drop1(mod_PR_log_9, test = "Chisq")
-mod_PR_log_10 <- update(mod_PR_log_9, .~. - D0:B0)
+mod_PR_log_10 <- update(mod_PR_log_9, .~. - B1)
 anova(mod_PR_log_10, mod_PR_log_9)
 performance_aic(mod_PR_log_10)
 
 drop1(mod_PR_log_10, test = "Chisq")
-mod_PR_log_11 <- update(mod_PR_log_10, .~. - L0)
+mod_PR_log_11 <- update(mod_PR_log_10, .~. - growth_period)
 anova(mod_PR_log_11, mod_PR_log_10)
 performance_aic(mod_PR_log_11)
 
 drop1(mod_PR_log_11, test = "Chisq")
-mod_PR_log_12 <- update(mod_PR_log_11, .~. - L1:B1)
+mod_PR_log_12 <- update(mod_PR_log_11, .~. - D0:B0)
 anova(mod_PR_log_12, mod_PR_log_11)
 performance_aic(mod_PR_log_12)
 
 drop1(mod_PR_log_12, test = "Chisq")
-mod_PR_log_13 <- update(mod_PR_log_12, .~. - L1)
+mod_PR_log_13 <- update(mod_PR_log_12, .~. - L0:B0)
 anova(mod_PR_log_13, mod_PR_log_12)
 performance_aic(mod_PR_log_13)
 
 drop1(mod_PR_log_13, test = "Chisq")
-mod_PR_log_14 <- update(mod_PR_log_13, .~. - B1)
+mod_PR_log_14 <- update(mod_PR_log_13, .~. - L0)
 anova(mod_PR_log_14, mod_PR_log_13)
 performance_aic(mod_PR_log_14)
 
 drop1(mod_PR_log_14, test = "Chisq")
-mod_PR_log_15 <- update(mod_PR_log_14, .~. - growth_period)
-anova(mod_PR_log_15, mod_PR_log_14)
+#mod_PR_log_15 <- update(mod_PR_log_14, .~. - growth_period)
+#anova(mod_PR_log_15, mod_PR_log_14)
 performance_aic(mod_PR_log_15)
 
 drop1(mod_PR_log_15, test = "Chisq")
@@ -182,15 +182,14 @@ check_model(mod_PR_quadrlog_15)
 
 
 #Model comparison------------------------------------------------
-compare_performance(mod_PR_step,
+comparison <- compare_performance(mod_PR_step,
                     mod_PR_quadr_step,
                     mod_PR_log_step,
                     mod_PR_quadrlog_step,
                     mod_PR_quadrlog_step_int,
-                    mod_PR_log_15,
-                    mod_PR_quadrlog_15)
+                    mod_PR_log_14)
 
-
+comparison
 #Interactions forward testing-------------
 mlogtest <- lmer(log(PR) ~ H + D0 + Severite + B0+ B0:D0 + (1 | ID_Enquete),suivi)
 anova(mlogtest, mod_PR_log_7)

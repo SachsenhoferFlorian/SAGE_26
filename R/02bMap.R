@@ -1,8 +1,10 @@
 library(sf)
 library(ggrepel)
+library(cowplot)
+library(patchwork)
 
-suivi <- suivi %>% mutate(GPS_long_ferme = ifelse(ID_Enquete == "742862779", -53.542698, GPS_long_ferme))
-suivi <- suivi %>% mutate(GPS_lat_ferme = ifelse(ID_Enquete == "742862779", 5.510749, GPS_lat_ferme))
+variete <- variete %>% mutate(GPS_long_ferme = ifelse(Farmer == "F29", -53.542698, GPS_long_ferme))
+variete <- variete %>% mutate(GPS_lat_ferme = ifelse(Farmer == "F29", 5.510749, GPS_lat_ferme))
 
 #Load map
 communes_guyane <- st_read("data/maps/ADMIN_EXPRESS_GUF/ADMIN-EXPRESS-COG-CARTO/1_DONNEES_LIVRAISON_2024-03-00169/ADECOGC_3-2_SHP_UTM22RGFG95_GUF-ED2024-02-22/COMMUNE.shp")
@@ -160,7 +162,7 @@ main_map <- ggplot() +
                   direction = "both", 
                   seed = 123) +
   coord_sf(xlim = c(-54.5, -51.5), ylim = c(3.6, 5.8)) +
-  scale_fill_manual(name = "Intercommunalité", values = c("CACL" = "#D4E6D4", "CCOG" = "#FFE4C4", "CCDS" = "#E8D5E8", "CCEG" = "#C9E5D9"), na.value = "#F5F5DC") +
+  scale_fill_manual(name = "Intercommunalité", values = c("CACL" = "#D4E6D4", "CCOG" = "#FFE4C4", "CCDS" = "#E8D5E8", "CCEG" = "#FFCCCC"), na.value = "#F5F5DC") +
   scale_color_brewer(palette = "Set1", name = "Community") +
   scale_size_continuous(name = "Number of varieties", range = c(2, 8)) +
   labs(title = "Accessions collected in French Guiana", x = "", y = "") +
@@ -175,7 +177,7 @@ main_map <- ggplot() +
 # Nur die Intercommunalité-Legende
 interco_legend_plot <- ggplot() +
   geom_sf(data = communes_colored, aes(fill = intercommunalite)) +
-  scale_fill_manual(name = "Intercommunalité", values = c("CACL" = "#D4E6D4", "CCOG" = "#FFE4C4", "CCDS" = "#E8D5E8", "CCEG" = "#C9E5D9"), na.value = "#F5F5DC") +
+  scale_fill_manual(name = "Intercommunalité", values = c("CACL" = "#D4E6D4", "CCOG" = "#FFE4C4", "CCDS" = "#E8D5E8", "CCEG" = "#FFCCCC"), na.value = "#F5F5DC") +
   theme_void() +
   theme(legend.position = "bottom",
         legend.background = element_rect(fill = "white", color = "black", size = 0.3),
@@ -210,14 +212,16 @@ size_legend <- cowplot::get_legend(size_legend_plot)
 
 
 # Füge die Legenden mit inset_element (patchwork) hinzu
-main_map +
+map_full <- main_map +
   inset_element(interco_legend, 
-                left = 0.12, bottom = 0.08, right = 0.67, top = 0.1,  # Unten links
+                left = 0.1, bottom = 0.09, right = 0.60, top = 0.1,  # Unten links
                 align_to = "full") +
   inset_element(size_legend, 
                 left = 0.4, bottom = 0.85, right = 0.98, top = 0.90,  # Oben rechts
                 align_to = "full") +
   inset_element(community_legend, 
-                left = 0.1, bottom = 0.13, right = 0.60, top = 0.16,  # Oben rechts
+                left = 0.1, bottom = 0.13, right = 0.53, top = 0.16,  # Oben rechts
                 align_to = "full")
+map_full
+ggsave("data/figures/full_map.png", plot=map_full, width = 8, height = 6, dpi = 300)
 

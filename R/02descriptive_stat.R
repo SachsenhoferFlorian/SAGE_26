@@ -8,6 +8,25 @@ summary(traits)
 matrix_traits_cv <- cramers_v_matrix(traits)
 matrix_traits_cv
 
+english_names <- c(
+  "Couleur_tige" = "Stem colour",
+  "Couleur_petiole" = "Petiole colour", 
+  "Couleur_feuilles_ap" = "Apical leaf colour",
+  "Forme_lobes" = "Lobe form",
+  "Nombre_lobes" = "Number of lobes",
+  "Ramification" = "Branching habit",
+  "Forme_plante" = "Plant form",
+  "Pubescence" = "Pubescence",
+  "Type_manioc" = "Cassava type",
+  "Couleur_nervure" = "Leaf venation colour",
+  "Couleur_branches" = "Branch colour"
+)
+
+
+colnames(matrix_traits_cv) <- english_names[colnames(matrix_traits_cv)]
+rownames(matrix_traits_cv) <- english_names[rownames(matrix_traits_cv)]
+
+#used
 corrplot(matrix_traits_cv,
          method = "color",
          type = "full",

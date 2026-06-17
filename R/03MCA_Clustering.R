@@ -25,11 +25,18 @@ ggplot(data=variete, aes(x=cluster, fill=Commune)) +
   geom_bar()
 
 #used
-ggplot(data=variete, aes(x=Commune, fill=cluster)) +
+fig_AccClustInt <- ggplot(data=variete, aes(x=Commune, fill=cluster)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")+
   ylab("Number of accessions")+
   xlab("Municipality")
+fig_AccClustInt
+
+ggsave("data/figures/AccessionClusterIntercomm.png", 
+       plot = fig_AccClustInt,
+       width = 5, 
+       height = 5,  
+       dpi = 300)
 
 ggplot(data=variete, aes(x=cluster, fill=Intercomm)) +
   geom_bar()
@@ -64,10 +71,18 @@ ggplot(data=variete, aes(x=cluster, fill=Farmer)) +
   facet_wrap (~ Intercomm, scales = "free_x")
 
 #used
-ggplot(data=variete, aes(x=Communaute, fill=cluster)) +
+fig_AccClustComm <- ggplot(data=variete, aes(x=Communaute, fill=cluster)) +
   geom_bar()+
   ylab("Number of accessions")+
   xlab("Community")
+
+fig_AccClustComm
+
+ggsave("data/figures/AccessionClusterCommunaute.png", 
+       plot = fig_AccClustComm,
+       width = 4, 
+       height = 5,  
+       dpi = 300)
 
 ggplot(data=variete, aes(x=cluster, fill=Communaute)) +
   geom_bar()
@@ -85,9 +100,23 @@ ggplot(data=variete, aes(x= Cultivation_depuis, fill=cluster)) +
 ggplot(data=variete, aes(x=cluster, fill=Cultivation_depuis)) +
   geom_bar()
 
+#used
+fig_AccCultiComm <- ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
+  geom_bar()+
+  ylab("Number of accessions")+
+  xlab("Cultivation since (years)")+
+  labs(fill = "Community")
 
-ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
-  geom_bar()
+fig_AccCultiComm
+
+ggsave("data/figures/AccessionCultiComm.png", 
+       plot = fig_AccCultiComm,
+       width = 6, 
+       height = 4,  
+       dpi = 300)
+
+
+
 ggplot(data=variete, aes(x=Communaute, fill=Cultivation_depuis)) +
   geom_bar()
 
@@ -110,11 +139,15 @@ emm_MCoC <- emmeans(mod_ComCult, ~ Communaute)
 pairs(emm_MCoC)
 cld_MCoC <- cld(emm_MCoC, Letters = letters)
 
+
+#used
 ggplot(as.data.frame(cld_MCoC),
        aes(x = Communaute, y = emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
+  geom_text(aes(label= .group, y = upper.CL), size = 6)+
+  ylab("Cultivation history (years)")+
+  xlab("Community")
 
 mod_clusterCult <- lm(data= variete, Cultiv_num ~ cluster)
 anova(mod_clusterCult)

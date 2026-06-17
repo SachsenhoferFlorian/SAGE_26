@@ -74,6 +74,29 @@ boxplot(dplyr::select(suivi_numeric, PB, PR))
 
 s_cor_mat <- cor(suivi_numeric, use = "pairwise.complete.obs")
 s_cor_mat
+
+allometric_english <- c(
+  "D0" = "D0",
+  "D1" = "D1",
+  "L0" = "L0",
+  "L1" = "L1",
+  "N0" = "N0",
+  "N1" = "N1",
+  "B0" = "B0",
+  "B1" = "B1",
+  "H" = "H",
+  "PB" = "AB",
+  "PR" = "RB",
+  "NR" = "NR",
+  "Severite" = "Sev_harvest",
+  "Severite_marqu" = "Sev_marking",
+  "growth_period" = "DAP"
+)
+
+colnames(s_cor_mat) <- allometric_english[colnames(s_cor_mat)]
+rownames(s_cor_mat) <- allometric_english[rownames(s_cor_mat)]
+
+
 corrplot(s_cor_mat,
          method = "color",
          type = "full",
@@ -81,6 +104,8 @@ corrplot(s_cor_mat,
          tl.srt = 50,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
+
+
 suivi <- suivi %>% filter(PR > 0)
 
 #Severity
@@ -183,7 +208,7 @@ compare_performance(mod_PR_step,
 
 
 
-#Modelling yield prediction with growth period and type of manioc / variety cluster------------
+#Modelling yield with growth period and type of manioc / variety cluster------------
 
 mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
@@ -202,7 +227,9 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
 
 ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
-  geom_parallel_slopes(formula = y ~ x)
+  geom_parallel_slopes(formula = y ~ x)+
+  ylab("Root biomass harvested")+
+  xlab("Days since planting")
 
 
 emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
@@ -215,7 +242,8 @@ ggplot(as.data.frame(cld_clust),
        aes(x = cluster, y = response)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
+  geom_text(aes(label= .group, y = upper.CL), size = 6) +
+  labs(x = "Cluster", y = "Root biomass (kg) (adjusted means, backtransformed)")
 
 
 
@@ -312,7 +340,7 @@ mod_Sev_clust <- lm(Severite ~ growth_period +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-mod_Sev_clust <- lm(Severite_cum ~ growth_period_marqu +cluster,suivi)
+mod_Sev_clust <- lm(Severite_cum ~ growth_period +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
@@ -368,6 +396,15 @@ summary(mod_sev_separate)
 
 #Modelling Harvest Index------------------------
 
+#like yield
+mod_HI <- lm(HI ~  H + L0 + L1  + N0 + D0 + D1 + N1 + B0 + B1 +B0:D0 +B1:D1+ B0:L0 + B1:L1+ B0:N0+B1:N1 +Severite + growth_period, filter(suivi, N1 > 0))
+plot(fitted(mod_HI), rstudent(mod_HI)) 
+summary(mod_HI)
+
+mod_HI_step <- step(mod_HI)
+mod_HI_step
+summary(mod_HI_step)
+
 #on ratios
 mod_HI <- lm(HI ~  NLrat0 + NLrat1 + LLrat  + NNrat + DDrat + LDrat0 + LDrat1, filter(suivi, N1 > 0))
 plot(fitted(mod_HI), rstudent(mod_HI)) 
@@ -378,7 +415,7 @@ mod_HI_step
 summary(mod_HI_step)
 
 
-ggplot(filter(suivi, N1 > 0), aes(x = HI, y =DDrat)) +
+ggplot(filter(suivi, N1 > 0), aes(x = DDrat, y =HI)) +
   geom_point() +
   geom_smooth(method = "lm")
 

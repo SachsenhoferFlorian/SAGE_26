@@ -8,11 +8,12 @@ suivi <- suivi %>% mutate(spec_grav_d = masse_air_decong / volume_d)
 
 DMC_reg <- lm(DMC ~ spec_grav, suivi)
 summary(DMC_reg)
-plot(DMC_reg)
 
 ggplot(suivi, aes(x = spec_grav, y = DMC)) +
   geom_point() +                       
-  geom_smooth(method = "lm", se = TRUE)
+  geom_smooth(method = "lm", se = TRUE)+
+  ylab("Rel. dry matter content")+
+  xlab("Specific gravity")
 
 DMC_froz_reg <- lm(DMC_d ~ spec_grav_d, suivi)
 summary(DMC_froz_reg)
@@ -26,6 +27,7 @@ ggplot(suivi, aes(x = spec_grav_d, y = DMC_d)) +
 #Values of frozen roots
 suivi <- suivi %>% mutate(spec_grav = ifelse(is.na(spec_grav), spec_grav_d, spec_grav ))
 suivi <- suivi %>% mutate(frozen = ifelse(is.na(volume_d), 0, 1))
+
 
 mod_froz <- lm(spec_grav ~ frozen, suivi)
 anova(mod_froz)
@@ -50,10 +52,11 @@ PR_DMC_mod <- lm(DMC_pre ~ PR, suivi)
 summary(PR_DMC_mod)
 
 GP_DMC_mod <- lm(DMC_pre ~ growth_period, suivi)
+
 summary(GP_DMC_mod)
 
 #Modelling Severité---------
-DMC_sev_mod <- lm(DMC_pre ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent, suivi)
+DMC_sev_mod <- lm(DMC_pre ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
 summary(DMC_sev_mod)
 
 DMC_sev_mod_step <- step(DMC_sev_mod)
@@ -65,9 +68,12 @@ summary(DMC_sev_mod2_step)
 
 
 #Modelling Cluster differences
-DMC_var_mod <- lm(DMC_pre ~  Severite_cum + cluster,suivi) 
+DMC_var_mod <- lm(DMC_pre ~   cluster + Severite*Severite_marqu + Severite_cum + Severite_cum_percent + growth_period,suivi) 
 anova(DMC_var_mod)
-emm_DMC_var <- emmeans(DMC_var_mod, ~ cluster)
+DMC_var_mod_step <- step(DMC_var_mod)
+#DMC_var_mod_step <- lm(DMC_pre ~   cluster + Severite_marqu + growth_period,suivi) 
+summary(DMC_var_mod_step)
+emm_DMC_var <- emmeans(DMC_var_mod_step, ~ cluster)
 emm_DMC_var
 pairs(emm_DMC_var)
 cld_clustDMC <- cld(emm_DMC_var, Letters = letters)
@@ -77,11 +83,16 @@ ggplot(as.data.frame(cld_clustDMC),
        aes(x = cluster,y=emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
-  geom_text(aes(label= .group, y = upper.CL), size = 6)
+  geom_text(aes(label= .group, y = upper.CL), size = 6)+
+  ylab("Rel. dry matter content (predicted from specific gravity)")+
+  xlab("Cluster")
 
-ggplot(suivi, aes(x = Severite_cum, y = DMC_pre, color = cluster)) +
+#used
+ggplot(suivi, aes(x = Severite_marqu, y = DMC_pre, color = cluster)) +
   geom_point() +
-  geom_parallel_slopes(formula = y ~ x)
+  geom_parallel_slopes(formula = y ~ x)+
+  ylab("Rel. dry matter content (predicted from specific gravity)")+
+  xlab("Severity at time of planting (%)")
 
 
 DMC_var_mod <- lm(DMC_pre ~ Type_manioc,suivi)

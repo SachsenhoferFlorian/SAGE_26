@@ -224,3 +224,23 @@ ft <- flextable(usage_summary)
 doc <- read_docx()
 doc <- body_add_flextable(doc, ft)
 print(doc, target = "data/presentation/usage_summary.docx")
+
+library(broom)
+library(flextable)
+#Model presentation-------
+coef_data <- tidy(mod_HI_step, conf.int = TRUE) %>%
+  mutate(across(where(is.numeric), ~ round(., 3)))
+
+ft <- flextable(coef_data) %>%
+  set_caption("Coefficients of final model") %>%
+  autofit()
+
+doc <- read_docx()
+doc <- body_add_flextable(doc, ft)
+print(doc, target = "data/presentation/coeff.docx")
+
+
+ft <- as_flextable(comparison)
+doc <- read_docx()
+doc <- body_add_flextable(doc, ft)
+print(doc, target = "data/presentation/comparison.docx")
