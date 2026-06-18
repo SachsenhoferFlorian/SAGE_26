@@ -74,7 +74,6 @@ variete$Cultiv_num <- as.numeric(mapping_Cultiv[as.character(variete$Cultivation
 
 
 
-
 #Suivi-----------------------------------------
 
 suivi = read.xlsx("data/raw/SuiviAccSAGE.xlsx", sheet = 1)

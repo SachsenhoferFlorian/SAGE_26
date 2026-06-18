@@ -37,7 +37,6 @@ corrplot(matrix_traits_cv,
 
 
 
-
 #Cross table
 trait_names <- colnames(mca_data)
 trait_names <- trait_names[-c(1,2,3,4,18)]

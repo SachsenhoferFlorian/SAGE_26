@@ -49,34 +49,86 @@ rf_quadr_caret <- train(
 
 print(rf_caret)
 plot(rf_caret)  
+varImp(rf_caret)
+varImpPlot(rf_caret)
 
 rf_best <- rf_caret$finalModel
 rf_best
 
+varImpPlot(rf_best, main = "Variable Importance")
+
 importance_rf <- importance(rf_best)
-importance_rf
+print(importance_rf)
+
+
 importance_df <- data.frame(
   Variable = rownames(importance_rf),
-  IncNodePurity = importance_rf[, "%IncMSE"]  
-) %>% arrange(desc(IncNodePurity))
-importance_df
+  IncMSE = importance_rf[, "%IncMSE"] 
+) %>% arrange(desc(IncMSE))
 
 
-varImpPlot(rf_best, main = "Variablenwichtigkeit")
-
-
-ggplot(importance_df[1:10,], aes(x = reorder(Variable, IncNodePurity), 
-                                 y = IncNodePurity)) +
-  geom_bar(stat = "identity") +
+fig_RFVarImp <- ggplot(importance_df[1:10,], aes(x = reorder(Variable, IncMSE), y = IncMSE)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
   coord_flip() +
-  labs(x = "Variable", y = "% Increase MSE", 
-       title = "Random Forest Variable Importance")
+  labs(
+    x = "Variable", 
+    y = "% Increase MSE", 
+    title = "Random Forest Variable Importance"
+  ) +
+  theme_minimal()
+fig_RFVarImp
+
+ggsave("data/figures/RFVarImp.png", 
+       plot = fig_RFVarImp,
+       width = 4.5, 
+       height = 4.5,  
+       dpi = 300)
+
+most_important_var <- importance_df$Variable[1]
+print(paste("Most important variable:", most_important_var))
+
+library(pdp) 
+
+pdp_plot <- partial(
+  rf_caret, 
+  pred.var = "D0",    
+  train = suivi,                  
+  type = "regression",               
+  grid.resolution = 100              
+)
+pdp_plot
+
+
+pdp_orig <- pdp_plot
+pdp_orig$yhat_orig <- exp(pdp_orig$yhat)  # <-- Exponential!
+
+# 3. Plot auf Original-Skala
+fig_pdpD0 <- ggplot(pdp_orig, aes(x = D0, y = yhat_orig)) +
+  geom_line(size = 1.5, color = "steelblue") +
+  geom_rug(data = suivi, aes(x = D0), 
+           alpha = 0.1, sides = "b", 
+           inherit.aes = FALSE) +
+  labs(
+    x = "Diameter of principal branch (cm)",
+    y = "Predicted root biomass (kg)",  # <-- Original-Skala!
+    title = "Partial Dependence Plot for D0"
+  ) +
+  theme_minimal()
+fig_pdpD0
+
+ggsave("data/figures/RFpdpD0.png", 
+       plot = fig_pdpD0,
+       width = 4.5, 
+       height = 4.5,  
+       dpi = 300)
+
+
 
 
 #Model comparison with linear models
 
 mod_log_cv <- train(
-  log(PR) ~ L1 + N0 + D0 + D1 + N1 + B0,
+  log(PR) ~ H + L0 + D0 + B0 + growth_period,
   data = suivi,
   method = "lm",
   trControl = ctrl

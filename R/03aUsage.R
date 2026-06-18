@@ -89,8 +89,9 @@ utilisations_rename <- variete %>% dplyr::select(all_of(utili_names)) %>%
 
 
 #UpSet diagram
+tiff("data/figures/upset_plot.tiff", width = 10, height = 7, units = "in", res = 300)
 upset(utilisations_rename, sets=names(utilisations_rename), order.by= "freq")
-
+dev.off()
 
 
 
@@ -136,6 +137,7 @@ ggplot(variete_alluv1,
 
 
 
+
 # ---- Data preparation: explode dummy variables + fractional weights ----
 variete_alluv2 <- variete %>%  mutate(Communaute = factor(Communaute, levels= c("indigenous","bushinengues","other"))) 
 
@@ -172,7 +174,7 @@ variete_alluv2 <- variete_alluv2 %>%
 
 # ---- Alluvial plot ----
 
-ggplot(variete_alluv2,
+fig_alluvial <- ggplot(variete_alluv2,
        aes(axis1 = cluster,
            axis2 = Communaute,
            axis3 = usage,
@@ -186,6 +188,110 @@ ggplot(variete_alluv2,
     title = "Alluvial Diagram Variety cluster -> Community -> Uses",
     y = "weighted count of accessions"
   )
+fig_alluvial
 
+ggsave("data/figures/UsagesAlluvial.png", 
+       plot = fig_alluvial,
+       width = 7, 
+       height = 6,  
+       dpi = 300)
 
+library(ggrepel)
+library(dplyr)
+library(ggplot2)
+library(ggalluvial)
+
+# Zuerst die Stratum-Daten extrahieren
+p_temp <- ggplot(variete_alluv2,
+                 aes(axis1 = cluster,
+                     axis2 = Communaute,
+                     axis3 = usage,
+                     y = n)) +
+  geom_alluvium(aes(fill = cluster), alpha = 0.8, lode.guidance = "forward") +
+  geom_stratum(width = 0.3)
+
+build_data <- ggplot_build(p_temp)
+stratum_data <- build_data$data[[2]]
+
+# Alle x-Werte anzeigen
+unique_x <- unique(stratum_data$x)
+print(unique_x)
+
+# Daten für jede Säule vorbereiten
+all_strata <- data.frame(
+  x = stratum_data$x,
+  ymin = stratum_data$ymin,
+  ymax = stratum_data$ymax,
+  label = stratum_data$stratum
+)
+all_strata$y_center <- (all_strata$ymin + all_strata$ymax) / 2
+
+# Rechte Säule (maximaler x-Wert) - hier sollen Sispa und Bowo verschoben werden
+max_x <- max(all_strata$x)
+right_data <- all_strata[all_strata$x == max_x, ]
+
+# Linke und mittlere Säule (alle anderen x-Werte)
+left_mid_data <- all_strata[all_strata$x != max_x, ]
+
+# Sispa und Bowo aus der rechten Säule für ggrepel
+repel_data <- right_data[right_data$label %in% c("Sispa", "Bowo", "Sweet cassava"), ]
+
+# Alle anderen Labels der rechten Säule (normal)
+normal_right_data <- right_data[!right_data$label %in% c("Sispa", "Bowo", "Sweet cassava"), ]
+
+# Finaler Plot mit allen Beschriftungen
+fig_alluvial <- ggplot(variete_alluv2,
+                       aes(axis1 = cluster,
+                           axis2 = Communaute,
+                           axis3 = usage,
+                           y = n)) +
+  geom_alluvium(aes(fill = cluster), alpha = 0.8, lode.guidance = "forward") +
+  geom_stratum(width = 0.3) +
+  
+  # Beschriftungen für linke und mittlere Säule (normal)
+  geom_text(
+    data = left_mid_data,
+    aes(x = x, y = y_center, label = label),
+    size = 3.5,
+    inherit.aes = FALSE
+  ) +
+  
+  # Normale Beschriftungen für die rechte Säule (außer Sispa und Bowo)
+  geom_text(
+    data = normal_right_data,
+    aes(x = x, y = y_center, label = label),
+    size = 3.5,
+    inherit.aes = FALSE
+  ) +
+  
+  # Versetzte Beschriftungen für Sispa und Bowo mit Linien
+  geom_text_repel(
+    data = repel_data,
+    aes(x = x, y = y_center, label = label),
+    nudge_x = 0.4,
+    hjust = 0,
+    direction = "y",
+    segment.color = "gray50",
+    segment.size = 0.5,
+    size = 3.5,
+    min.segment.length = 0,
+    box.padding = 0.5,
+    inherit.aes = FALSE
+  ) +
+  
+  scale_x_discrete(limits = c("Cluster", "Community", "Uses")) +
+  theme_minimal() +
+  labs(
+    title = "Alluvial Diagram:  Variety clusters -> Community -> Uses",
+    y = "(weighted) count of accessions",
+    x = ""
+  )
+
+fig_alluvial
+
+ggsave("data/figures/UsagesAlluvial.png", 
+       plot = fig_alluvial,
+       width = 8.9, 
+       height = 6,  
+       dpi = 300)
 

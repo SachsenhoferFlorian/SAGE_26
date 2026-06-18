@@ -27,7 +27,7 @@ suivi <- suivi %>% mutate(HI= PR/(PR+PB))
 
 
 #Calculations for Severity
-suivi <- suivi %>% mutate(growth_period_marqu = Date_enquete - delta_Enqu)
+suivi <- suivi %>% mutate(growth_period_marqu = growth_period - delta_Enqu)
 suivi <- suivi %>% mutate(delta_Enqu = as.numeric(delta_Enqu),
                           growth_period_marqu = as.numeric(growth_period_marqu))
 suivi <- suivi %>% mutate(Sev_diff = Severite-Severite_marqu)
@@ -96,7 +96,7 @@ allometric_english <- c(
 colnames(s_cor_mat) <- allometric_english[colnames(s_cor_mat)]
 rownames(s_cor_mat) <- allometric_english[rownames(s_cor_mat)]
 
-
+#used
 corrplot(s_cor_mat,
          method = "color",
          type = "full",
@@ -104,7 +104,6 @@ corrplot(s_cor_mat,
          tl.srt = 50,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
-
 
 suivi <- suivi %>% filter(PR > 0)
 
@@ -225,11 +224,20 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
   geom_hline(yintercept = 0, color = "red") +
   labs(title = "Studentized Residuals Plot")
 
-ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
+
+#used
+fig_yieldDAP <- ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)+
   ylab("Root biomass harvested")+
   xlab("Days since planting")
+fig_yieldDAP 
+
+ggsave("data/figures/YieldClusters.png", 
+       plot = fig_yieldDAP,
+       width = 5, 
+       height = 4.5,  
+       dpi = 300)
 
 
 emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
@@ -238,12 +246,19 @@ pairs(emm_clust)
 cld_clust <- cld(emm_clust, Letters = letters)
 cld_clust
 
-ggplot(as.data.frame(cld_clust),
+fig_ClustYieldEmm <- ggplot(as.data.frame(cld_clust),
        aes(x = cluster, y = response)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6) +
   labs(x = "Cluster", y = "Root biomass (kg) (adjusted means, backtransformed)")
+fig_ClustYieldEmm
+
+ggsave("data/figures/YieldClustersEmm.png", 
+       plot = fig_ClustYieldEmm,
+       width = 3.5, 
+       height = 4.5,  
+       dpi = 300)
 
 
 
@@ -326,7 +341,7 @@ cld_clust_mm
 
 
 ggplot(as.data.frame(cld_clust_mm),
-       aes(x = cluster, y = emmean)) +
+       aes(x = Type_manioc, y = response)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
@@ -349,7 +364,7 @@ anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
 
-ggplot(suivi, aes(x = growth_period, y = Severite_marqu, color = cluster)) +
+ggplot(suivi, aes(x = growth_period_marqu, y = Severite_marqu, color = cluster)) +
   geom_point() +
   geom_smooth(method = "lm")
 
@@ -414,10 +429,19 @@ mod_HI_step <- step(mod_HI)
 mod_HI_step
 summary(mod_HI_step)
 
-
-ggplot(filter(suivi, N1 > 0), aes(x = DDrat, y =HI)) +
+#used
+fig_DDratHI <- ggplot(filter(suivi, N1 > 0), aes(x = DDrat, y =HI)) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm")+
+  ylab("Harvest index")+
+  xlab("Diameter secondary branch/Diameter principal branch")
+fig_DDratHI
+
+ggsave("data/figures/DDratHI.png", 
+       plot = fig_DDratHI,
+       width = 6, 
+       height = 4.5,  
+       dpi = 300)
 
 
 #on variety clusters

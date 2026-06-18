@@ -3,8 +3,7 @@ library(ggrepel)
 library(cowplot)
 library(patchwork)
 
-variete <- variete %>% mutate(GPS_long_ferme = ifelse(Farmer == "F29", -53.542698, GPS_long_ferme))
-variete <- variete %>% mutate(GPS_lat_ferme = ifelse(Farmer == "F29", 5.510749, GPS_lat_ferme))
+
 
 #Load map
 communes_guyane <- st_read("data/maps/ADMIN_EXPRESS_GUF/ADMIN-EXPRESS-COG-CARTO/1_DONNEES_LIVRAISON_2024-03-00169/ADECOGC_3-2_SHP_UTM22RGFG95_GUF-ED2024-02-22/COMMUNE.shp")
