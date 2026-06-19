@@ -18,7 +18,7 @@ fig_DMCSpecGra <- ggplot(suivi, aes(x = spec_grav, y = DMC)) +
 fig_DMCSpecGra
 
 ggsave("data/figures/DMCSpecGra.png", 
-       plot = fig_DMCSevclust,
+       plot = fig_DMCSpecGra,
        width = 6, 
        height = 4.5,  
        dpi = 300)
@@ -78,8 +78,13 @@ summary(DMC_sev_mod2_step)
 
 #Modelling Cluster differences
 DMC_var_mod <- lm(DMC_pre ~   cluster + Severite*Severite_marqu + Severite_cum + Severite_cum_percent + growth_period,suivi) 
+check_model((DMC_var_mod))
+shapiro.test(residuals(DMC_var_mod))
 anova(DMC_var_mod)
 DMC_var_mod_step <- step(DMC_var_mod)
+check_model((DMC_var_mod_step))
+plot(DMC_var_mod_step)
+
 #DMC_var_mod_step <- lm(DMC_pre ~   cluster + Severite_marqu + growth_period,suivi) 
 summary(DMC_var_mod_step)
 anova(DMC_var_mod_step)

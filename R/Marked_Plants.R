@@ -1,5 +1,5 @@
 library(lubridate)
-plants = read.xlsx("data/raw/SuiviAccSAGE.xlsx", sheet = 2)
+plants = read.xlsx("data/raw/Plantes_marquAccSAGE.xlsx", sheet = 1)
 #Joining with variete
 plants <- plants %>% left_join(variete, by = c("Code_Var" = "Code_var"))
 plants$Severite_marqu <- mapping_severite[as.character(plants$Severite_marqu)]
@@ -15,8 +15,16 @@ mod_Sev_clust <- lm(Severite_marqu ~ growth_period_marqu + cluster,plants)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
+plants$Severite_marqu1 <- plants$Severite_marqu / 100
+mod_Sev_clust <- glm(Severite_marqu1 ~ growth_period_marqu + cluster,
+                     family = quasibinomial(link = "logit"),
+                     data = plants)
+anova(mod_Sev_clust)
+summary(mod_Sev_clust)
+deviance(mod_Sev_clust) / df.residual(mod_Sev_clust)
 
-emm_Sev_clust <- emmeans(mod_Sev_clust, ~ cluster)
+
+emm_Sev_clust <- emmeans(mod_Sev_clust, ~ cluster,type="response")
 emm_Sev_clust
 pairs(emm_Sev_clust)
 cld_Sev_clust <- cld(emm_Sev_clust, Letters = letters)
@@ -24,9 +32,9 @@ cld_Sev_clust
 
 
 fig_SevClust <- ggplot(as.data.frame(cld_Sev_clust),
-       aes(x = cluster, y = emmean)) +
+       aes(x = cluster, y = prob)) +
   geom_col() +
-  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), width = 0.2)+
   labs(x = "Cluster", y = "Severity at the time of marking (%)(adjusted means)")
 fig_SevClust 
 

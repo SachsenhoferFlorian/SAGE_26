@@ -224,3 +224,7 @@ map_full <- main_map +
 map_full
 ggsave("data/figures/full_map.png", plot=map_full, width = 8, height = 6, dpi = 300)
 
+
+
+
+

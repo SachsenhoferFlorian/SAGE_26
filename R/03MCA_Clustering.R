@@ -141,13 +141,20 @@ cld_MCoC <- cld(emm_MCoC, Letters = letters)
 
 
 #used
-ggplot(as.data.frame(cld_MCoC),
+fig_CultiComm <-ggplot(as.data.frame(cld_MCoC),
        aes(x = Communaute, y = emmean)) +
   geom_col() +
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)+
   ylab("Cultivation history (years)")+
   xlab("Community")
+fig_CultiComm
+
+ggsave("data/figures/emmCultiComm.png", 
+       plot = fig_CultiComm,
+       width = 4, 
+       height = 4,  
+       dpi = 300)
 
 mod_clusterCult <- lm(data= variete, Cultiv_num ~ cluster)
 anova(mod_clusterCult)

@@ -39,11 +39,12 @@ avg_k <- suivi %>%                                                         #obse
           pull(mean_k)
 suivi <- suivi %>% mutate(k = ifelse(as.numeric(delta_Enqu) < 30, avg_k, k))
 suivi <- suivi %>% mutate(deltaT_infect= Severite/k)
-#suivi <- suivi %>% mutate(deltaT_infect = ifelse(deltaT_infect > growth_period, growth_period, deltaT_infect))
+suivi <- suivi %>% mutate(deltaT_infect2 = ifelse(deltaT_infect > growth_period, growth_period, deltaT_infect))
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
 #suivi <- suivi %>% mutate(Severite_cum = ifelse(deltaT_infect > growth_period, Severite_cum - (((as.numeric(deltaT_infect-growth_period))^2)*k)/2 , Severite_cum))
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
-
+suivi <- suivi %>% mutate(Severite_cum2 = (deltaT_infect2*Severite)/2)
+suivi <- suivi %>% mutate(Severite_cum_percent2 = Severite_cum2/(as.numeric(growth_period)))
 
 #Roots and clusters---------
 table(suivi$cluster, suivi$Couleur_rac_in)
@@ -115,6 +116,7 @@ plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
 
 mod_Sev_step <- step(mod_Sev)
+anova(mod_Sev_step)
 summary(mod_Sev_step)
 
 #Modelling Yield Prediction------------------------------
@@ -346,12 +348,18 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2)+
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
-#Modelling Severity----------
-mod_Sev_clust <- lm(Severite_cum_percent ~ growth_period + cluster,suivi)
+ #Modelling Severity----------
+suivi$Severite_cum_percent2 <- suivi$Severite_cum_percent2 / 100
+mod_Sev_clust <- glm(Severite_cum_percent2 ~ growth_period + cluster, 
+                     family = quasibinomial(link = "logit"),
+                     data = suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-mod_Sev_clust <- lm(Severite ~ growth_period +cluster,suivi)
+suivi$Severite1 <- suivi$Severite / 100
+mod_Sev_clust <- glm(Severite1 ~ growth_period +cluster,
+                    family = quasibinomial(link = "logit"),
+                    data = suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
@@ -359,9 +367,14 @@ mod_Sev_clust <- lm(Severite_cum ~ growth_period +cluster,suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-mod_Sev_clust <- lm(Severite_marqu ~ growth_period_marqu +cluster,suivi)
+
+suivi$Severite_marqu1 <- suivi$Severite_marqu / 100
+mod_Sev_clust <- glm(Severite_marqu1 ~ growth_period_marqu + cluster,
+                     family = quasibinomial(link = "logit"),
+                     data = suivi)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
+
 
 
 ggplot(suivi, aes(x = growth_period_marqu, y = Severite_marqu, color = cluster)) +
@@ -372,7 +385,7 @@ ggplot(suivi, aes(x = growth_period, y = Severite_cum, color = cluster)) +
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)
 
-emm_Sev_clust <- emmeans(mod_Sev_clust, ~ cluster)
+emm_Sev_clust <- emmeans(mod_Sev_clust, ~ cluster, type="response")
 emm_Sev_clust
 pairs(emm_Sev_clust)
 cld_Sev_clust <- cld(emm_Sev_clust, Letters = letters)

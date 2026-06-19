@@ -3,8 +3,14 @@
 .RData
 .Ruserdata
 # sensitive data
-data/raw/*
+data/*
 *.xlsx
 VennDiagram*
 .positai
 data/presentation/tableaux_pres.pptx
+AccessionClusterIntercomm.png
+cluster_descriptions.docx
+full_map.png
+guyane_adm3.geojson
+cluster_descriptions.docx
+~$uster_descriptions.docx
