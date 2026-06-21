@@ -37,14 +37,15 @@ avg_k <- suivi %>%                                                         #obse
           filter(as.numeric(delta_Enqu) > 30) %>%
           summarise(mean_k = mean(k)) %>%
           pull(mean_k)
+#for short time between visits k is taken as the average of all other ks
 suivi <- suivi %>% mutate(k = ifelse(as.numeric(delta_Enqu) < 30, avg_k, k))
 suivi <- suivi %>% mutate(deltaT_infect= Severite/k)
-suivi <- suivi %>% mutate(deltaT_infect2 = ifelse(deltaT_infect > growth_period, growth_period, deltaT_infect))
+#calculation of ADPC1
 suivi <- suivi %>% mutate(Severite_cum = (deltaT_infect*Severite)/2)
-#suivi <- suivi %>% mutate(Severite_cum = ifelse(deltaT_infect > growth_period, Severite_cum - (((as.numeric(deltaT_infect-growth_period))^2)*k)/2 , Severite_cum))
+#cap of the triangle before planting
+suivi <- suivi %>% mutate(Severite_cum = ifelse(deltaT_infect > growth_period, Severite_cum - (((as.numeric(deltaT_infect-growth_period))^2)*k)/2 , Severite_cum))
+#ADPC2 = value in percent by dividing through growth period
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
-suivi <- suivi %>% mutate(Severite_cum2 = (deltaT_infect2*Severite)/2)
-suivi <- suivi %>% mutate(Severite_cum_percent2 = Severite_cum2/(as.numeric(growth_period)))
 
 #Roots and clusters---------
 table(suivi$cluster, suivi$Couleur_rac_in)
@@ -60,7 +61,8 @@ suivi_numeric$growth_period <- as.numeric(suivi_numeric$growth_period)
 suivi$growth_period <- as.numeric(suivi$growth_period)
 suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
 suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche, masse_air_cong,masse_air_decong,poids_eau_cong,poids_eau_decong))
-suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake
+suivi_full <- suivi                                 #save of all observations for models without allometry
+suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake in allometry
 suivi_numeric <- suivi_numeric %>% filter(N0<150 & !is.na(N0))      # deleting observation with mistake
 
 
@@ -106,12 +108,13 @@ corrplot(s_cor_mat,
          addCoef.col = "black",
          addCoefasPercent = TRUE) 
 
-suivi <- suivi %>% filter(PR > 0)
+suivi <- suivi %>% filter(PR > 0) #removing zero observation for the log-transformation from the dataset without the allometry mistake
 
 #Severity
-mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi_full)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
-mod_Sev <- lm(log(PR) ~   Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
+suivi_n0 <- suivi_full %>% filter(PR > 0)   #removing zero observation for the log-transformation
+mod_Sev <- lm(log(PR) ~   Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi_n0)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
 
@@ -210,10 +213,10 @@ compare_performance(mod_PR_step,
 
 
 #Modelling yield with growth period and type of manioc / variety cluster------------
-
-mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi)
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_full)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster+growth_period + Severite_cum_percent + Severite_marqu ,suivi)
+
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_n0)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
@@ -228,7 +231,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
 
 
 #used
-fig_yieldDAP <- ggplot(suivi, aes(x = growth_period, y = PR, color = cluster)) +
+fig_yieldDAP <- ggplot(suivi_n0, aes(x = growth_period, y = PR, color = cluster)) +
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)+
   ylab("Root biomass harvested")+
@@ -264,7 +267,7 @@ ggsave("data/figures/YieldClustersEmm.png",
 
 
 
-mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_marqu + Severite_cum_percent ,suivi)
+mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_marqu + Severite_cum_percent ,suivi_full)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
 mod_typ_full <- lm(log(PR) ~  growth_period + Severite_marqu + Severite_cum_percent + cluster+ Type_manioc  ,suivi)
 anova(mod_typ_full)
@@ -349,8 +352,8 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
  #Modelling Severity----------
-suivi$Severite_cum_percent2 <- suivi$Severite_cum_percent2 / 100
-mod_Sev_clust <- glm(Severite_cum_percent2 ~ growth_period + cluster, 
+suivi$Severite_cum_percent <- suivi$Severite_cum_percent / 100
+mod_Sev_clust <- glm(Severite_cum_percent ~ growth_period + cluster, 
                      family = quasibinomial(link = "logit"),
                      data = suivi)
 anova(mod_Sev_clust)

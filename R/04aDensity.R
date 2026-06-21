@@ -1,3 +1,4 @@
+suivi <- suivi_full
 suivi <- suivi %>% mutate(volume = masse_air - poids_eau)
 suivi <- suivi %>% mutate(spec_grav = masse_air / volume)
 suivi <- suivi %>% mutate(DMC = masse_seche / masse_air)

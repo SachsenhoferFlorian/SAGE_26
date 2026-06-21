@@ -1,4 +1,3 @@
-library(lubridate)
 plants = read.xlsx("data/raw/Plantes_marquAccSAGE.xlsx", sheet = 1)
 #Joining with variete
 plants <- plants %>% left_join(variete, by = c("Code_Var" = "Code_var"))
@@ -35,7 +34,7 @@ fig_SevClust <- ggplot(as.data.frame(cld_Sev_clust),
        aes(x = cluster, y = prob)) +
   geom_col() +
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), width = 0.2)+
-  labs(x = "Cluster", y = "Severity at the time of marking (%)(adjusted means)")
+  labs(x = "Cluster", y = "Severity at the time of marking (%) (adjusted means)")
 fig_SevClust 
 
 ggsave("data/figures/SevClust.png", 
