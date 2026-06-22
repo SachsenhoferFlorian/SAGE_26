@@ -7,6 +7,10 @@ suivi <- suivi %>% mutate(volume_d = masse_air_decong - poids_eau_decong)
 suivi <- suivi %>% mutate(spec_grav_d = masse_air_decong / volume_d)
 
 
+summary(suivi$poids_eau)
+summary(suivi$poids_eau_decong)
+
+
 DMC_reg <- lm(DMC ~ spec_grav, suivi)
 summary(DMC_reg)
 

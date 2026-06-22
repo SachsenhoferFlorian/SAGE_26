@@ -63,6 +63,7 @@ suivi$growth_period_m <- suivi$growth_period / 30    #Transformation to months
 suivi_numeric <- suivi_numeric %>% dplyr::select(-c(masse_air,poids_eau,masse_seche, masse_air_cong,masse_air_decong,poids_eau_cong,poids_eau_decong))
 suivi_full <- suivi                                 #save of all observations for models without allometry
 suivi <- suivi %>% filter(N0<150 & !is.na(N0) )      # deleting observation with mistake in allometry
+suivi_n0 <- suivi_full %>% filter(PR > 0)   #removing zero observation for the log-transformation
 suivi_numeric <- suivi_numeric %>% filter(N0<150 & !is.na(N0))      # deleting observation with mistake
 
 
@@ -113,7 +114,6 @@ suivi <- suivi %>% filter(PR > 0) #removing zero observation for the log-transfo
 #Severity
 mod_Sev <- lm(PR ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi_full)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
-suivi_n0 <- suivi_full %>% filter(PR > 0)   #removing zero observation for the log-transformation
 mod_Sev <- lm(log(PR) ~   Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi_n0)
 plot(fitted(mod_Sev), rstudent(mod_Sev))
 summary(mod_Sev)
@@ -215,7 +215,6 @@ compare_performance(mod_PR_step,
 #Modelling yield with growth period and type of manioc / variety cluster------------
 mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_full)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-
 mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_n0)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
