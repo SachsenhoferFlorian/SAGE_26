@@ -50,7 +50,7 @@ rf_quadr_caret <- train(
 print(rf_caret)
 plot(rf_caret)  
 varImp(rf_caret)
-varImpPlot(rf_caret)
+#varImpPlot(rf_caret)
 
 rf_best <- rf_caret$finalModel
 rf_best

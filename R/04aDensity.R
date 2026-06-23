@@ -1,4 +1,4 @@
-suivi <- suivi_full
+suivi <- suivi_n0
 suivi <- suivi %>% mutate(volume = masse_air - poids_eau)
 suivi <- suivi %>% mutate(spec_grav = masse_air / volume)
 suivi <- suivi %>% mutate(DMC = masse_seche / masse_air)
@@ -82,7 +82,8 @@ summary(DMC_sev_mod2_step)
 
 
 #Modelling Cluster differences
-DMC_var_mod <- lm(DMC_pre ~   cluster + Severite*Severite_marqu + Severite_cum + Severite_cum_percent + growth_period,suivi) 
+DMC_var_mod <- lm(DMC_pre ~   Severite*Severite_marqu + Severite_cum + Severite_cum_percent + growth_period + cluster,suivi) 
+plot(fitted(DMC_var_mod), rstudent(DMC_var_mod))
 check_model((DMC_var_mod))
 shapiro.test(residuals(DMC_var_mod))
 anova(DMC_var_mod)
@@ -90,8 +91,9 @@ DMC_var_mod_step <- step(DMC_var_mod)
 check_model((DMC_var_mod_step))
 plot(DMC_var_mod_step)
 
-#DMC_var_mod_step <- lm(DMC_pre ~   cluster + Severite_marqu + growth_period,suivi) 
+
 summary(DMC_var_mod_step)
+DMC_var_mod_step <- lm(DMC_pre ~  cluster + Severite_marqu ,suivi) 
 anova(DMC_var_mod_step)
 emm_DMC_var <- emmeans(DMC_var_mod_step, ~ cluster)
 emm_DMC_var

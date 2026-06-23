@@ -34,7 +34,7 @@ fig_SevClust <- ggplot(as.data.frame(cld_Sev_clust),
        aes(x = cluster, y = prob)) +
   geom_col() +
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), width = 0.2)+
-  labs(x = "Cluster", y = "Severity at the time of marking (%) (adjusted means)")
+  labs(x = "Cluster", y = "Severity at marking (%) (adjusted means)")
 fig_SevClust 
 
 ggsave("data/figures/SevClust.png", 

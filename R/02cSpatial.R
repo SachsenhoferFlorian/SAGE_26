@@ -19,7 +19,7 @@ head(suivi[, c("Severite_prop", "long_clean", "lat_clean")])
 summary(suivi[, c("Severite_prop", "long_clean", "lat_clean")])
 
 # 4. SIMPLE GLM 
-spatial_glm <- glm(Severite_prop ~ growth_period +long_clean * lat_clean,
+spatial_glm <- glm(Severite_prop ~ growth_period +long_clean * lat_clean ,
                    data = suivi,
                    family = quasibinomial())
 

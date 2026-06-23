@@ -165,6 +165,10 @@ ggplot(data = data.frame(Fitted = fitted(mod_PR_log_step), Resid = rstudent(mod_
 summary(mod_PR_log_step)
 performance_aic(mod_PR_log_step)
 
+mod_PR_log_simple <- lm(log(PR) ~  D0 + B0, suivi)
+summary(mod_PR_log_simple)
+performance_aic(mod_PR_log_simple)
+
 
 #Quadratic model------------------------------------------
 
@@ -208,18 +212,20 @@ compare_performance(mod_PR_step,
                     mod_PR_quadr_step,
                     mod_PR_log_step,
                     mod_PR_quadrlog_step,
-                    mod_PR_quadrlog_step_int)
+                    mod_PR_quadrlog_step_int,
+                    mod_PR_log_simple)
 
 
 
 #Modelling yield with growth period and type of manioc / variety cluster------------
-mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_full)
+mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu*Severite +Severite_cum ,suivi_full)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu ,suivi_n0)
+mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu+ Severite_marqu*Severite +Severite_cum ,suivi_n0)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
 summary(mod_clust_step)
+mod_clust_step <- lm(log(PR) ~ growth_period + Severite_cum_percent +  Severite_marqu + Type_manioc+ cluster, suivi_n0) #rearrangement for ANOVA
 anova(mod_clust_step)
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_clust_step)),   #student plot
@@ -234,7 +240,7 @@ fig_yieldDAP <- ggplot(suivi_n0, aes(x = growth_period, y = PR, color = cluster)
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)+
   ylab("Root biomass harvested")+
-  xlab("Days since planting")
+  xlab("Days after planting")
 fig_yieldDAP 
 
 ggsave("data/figures/YieldClusters.png", 
@@ -266,9 +272,9 @@ ggsave("data/figures/YieldClustersEmm.png",
 
 
 
-mod_typ_full <- lm(PR ~   Type_manioc*growth_period + Severite_marqu + Severite_cum_percent ,suivi_full)
+mod_typ_full <- lm(PR ~   Type_manioc+ growth_period + Severite_marqu + Severite_cum_percent ,suivi_full)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
-mod_typ_full <- lm(log(PR) ~  growth_period + Severite_marqu + Severite_cum_percent + cluster+ Type_manioc  ,suivi)
+mod_typ_full <- lm(log(PR) ~  growth_period + Severite_marqu + Severite_cum_percent + Type_manioc  ,suivi)
 anova(mod_typ_full)
 plot(fitted(mod_typ_full), rstudent(mod_typ_full)) 
 summary(mod_typ_full)
@@ -351,29 +357,29 @@ ggplot(as.data.frame(cld_clust_mm),
   geom_text(aes(label= .group, y = upper.CL), size = 6)
 
  #Modelling Severity----------
-suivi$Severite_cum_percent <- suivi$Severite_cum_percent / 100
+suivi_full$Severite_cum_percent <- suivi_full$Severite_cum_percent / 100
 mod_Sev_clust <- glm(Severite_cum_percent ~ growth_period + cluster, 
                      family = quasibinomial(link = "logit"),
-                     data = suivi)
+                     data = suivi_full)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-suivi$Severite1 <- suivi$Severite / 100
+suivi_full$Severite1 <- suivi_full$Severite / 100
 mod_Sev_clust <- glm(Severite1 ~ growth_period +cluster,
                     family = quasibinomial(link = "logit"),
-                    data = suivi)
+                    data = suivi_full)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
-mod_Sev_clust <- lm(Severite_cum ~ growth_period +cluster,suivi)
+mod_Sev_clust <- lm(Severite_cum ~ growth_period +cluster,suivi_full)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
 
-suivi$Severite_marqu1 <- suivi$Severite_marqu / 100
+suivi_full$Severite_marqu1 <- suivi_full$Severite_marqu / 100
 mod_Sev_clust <- glm(Severite_marqu1 ~ growth_period_marqu + cluster,
                      family = quasibinomial(link = "logit"),
-                     data = suivi)
+                     data = suivi_full)
 anova(mod_Sev_clust)
 summary(mod_Sev_clust)
 
@@ -421,6 +427,7 @@ severity_df <- suivi %>%
 severity_df <- severity_df %>% mutate(gp_sev= ifelse(Sev_col=="Severite",growth_period, growth_period_marqu))
 
 mod_sev_separate <- lm(Sev ~  gp_sev + cluster, severity_df)
+
 anova(mod_sev_separate)
 summary(mod_sev_separate)
 
