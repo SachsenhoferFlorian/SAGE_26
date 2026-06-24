@@ -467,9 +467,10 @@ ggsave("data/figures/DDratHI.png",
 
 
 #on variety clusters
-mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite_cum  , suivi)
+mod_HI_clust <- lm(HI ~  cluster*growth_period + Severite_cum  , suivi_n0)
 plot(fitted(mod_HI_clust), rstudent(mod_HI_clust))
 check_model(mod_HI_clust)
+mod_HI_clust <- lm(formula = HI ~ growth_period + Severite_cum + cluster, data = suivi_n0)
 anova(mod_HI_clust)
 summary(mod_HI_clust)
 

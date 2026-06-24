@@ -46,6 +46,18 @@ suivi <- suivi %>% mutate(frozen = ifelse(is.na(volume_d), 0, 1))
 mod_froz <- lm(spec_grav ~ frozen, suivi)
 anova(mod_froz)
 
+#verification of correction on basis of 6 roots
+suivi_veridens <- suivi %>% filter(!is.na(masse_air) & !is.na(masse_air_decong))
+boxplot(dplyr::select(suivi_veridens, spec_grav, spec_grav_d))
+summary(dplyr::select(suivi_veridens, spec_grav, spec_grav_d, DMC))
+
+mod_veridens <- lm(spec_grav_d ~ spec_grav, suivi_veridens)
+summary(mod_veridens)
+
+ggplot(suivi_veridens, aes(x=spec_grav, y= spec_grav_d)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE)
+
 #correction due to water loss by freezing and thawing
 emm_froz <- emmeans(mod_froz, ~ frozen)
 pairs(emmeans(mod_froz, ~ frozen))
