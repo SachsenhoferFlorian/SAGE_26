@@ -134,6 +134,14 @@ mod_log_cv <- train(
   trControl = ctrl
 )
 
+mod_pow_cv <- train(
+  log(PR) ~  log(H) + log(L0) + log(D0) + log(B0) + 
+    growth_period + log(D0):log(B0) + log(L0):log(B0),
+  data = suivi,
+  method = "lm",
+  trControl = ctrl
+)
+
 
 mod_quadrlog_cv <- train(
   log(PR) ~ I(L1^2) + I(N0^2) + N0 + I(D0^2) + D0 + 
@@ -146,5 +154,6 @@ mod_quadrlog_cv <- train(
 
 mod_log_cv$results$RMSE
 mod_quadrlog_cv$results$RMSE
+mod_pow_cv$results$RMSE
 rf_caret$results$RMSE
 rf_quadr_caret$results$RMSE

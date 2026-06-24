@@ -167,7 +167,7 @@ performance_aic(mod_PR_log_step)
 
 mod_PR_log_simple <- lm(log(PR) ~  D0 + B0, suivi)
 summary(mod_PR_log_simple)
-performance_aic(mod_PR_log_simple)
+performance_aic(mod_PR_log_simple, REML=FALSE)
 
 
 #Quadratic model------------------------------------------
@@ -207,13 +207,50 @@ mod_PR_quadrlog_step_int <- lm(formula = log(PR) ~ I(L1^2) + I(N0^2) + N0 + I(D1
 summary(mod_PR_quadrlog_step_int)
 performance_aic(mod_PR_quadrlog_step_int)
 
+#power model
+
+# Add a small constant (1) to all continuous predictors
+mod_PR_pow <- lm(log(PR) ~ log(H + 1) + log(L0 + 1) + log(L1 + 1) + 
+                        log(N0 + 1) + log(D0 + 1) + log(D1 + 1) + 
+                        log(N1 + 1) + log(B0 + 1) + log(B1 + 1) + 
+                        log(B0 + 1):log(D0 + 1) + 
+                        log(B1 + 1):log(D1 + 1) + 
+                        log(B0 + 1):log(L0 + 1) + 
+                        log(B1 + 1):log(L1 + 1) + 
+                        log(B0 + 1):log(N0 + 1) + 
+                        log(B1 + 1):log(N1 + 1) + 
+                        Severite + growth_period, 
+                      data = suivi)
+mod_PR_pow_step <- step(mod_PR_pow)
+summary(mod_PR_pow_step)
+
+mod_PR_pow_simple <- lm(log(PR) ~ log(H) + log(L0) + log(N0) + log(D0) + log(B0) + 
+                          log(B0):log(D0) + 
+                          log(B0):log(L0) + 
+                          log(B0):log(N0) + 
+                          Severite + growth_period, 
+                        data = suivi)
+mod_PR_pow_simple_step <- step(mod_PR_pow_simple)
+
+summary(mod_PR_pow_simple_step)
+plot(fitted(mod_PR_pow_simple_step), rstudent(mod_PR_pow_simple_step))
+
+mod_PR_pow_simplest <- lm(log(PR) ~  log(D0) + log(B0), suivi)
+summary(mod_PR_pow_simplest)
+performance_aic(mod_PR_pow_simplest, REML=FALSE)
+
+
 #Model comparison------------------------------------------------
 compare_performance(mod_PR_step,
                     mod_PR_quadr_step,
                     mod_PR_log_step,
                     mod_PR_quadrlog_step,
                     mod_PR_quadrlog_step_int,
-                    mod_PR_log_simple)
+                    mod_PR_log_simple,
+                    mod_PR_pow_step,
+                    mod_PR_pow_simple_step,
+                    mod_PR_pow_simplest
+                    )
 
 
 

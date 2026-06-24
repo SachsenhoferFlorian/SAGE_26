@@ -370,7 +370,7 @@ print(doc, target = "data/presentation/usage_summary.docx")
 library(broom)
 library(flextable)
 #Model presentation-------
-coef_data <- tidy(mod_PR_log_simple, conf.int = TRUE) %>%
+coef_data <- tidy(mod_PR_pow_simplest, conf.int = TRUE) %>%
   mutate(across(where(is.numeric), ~ round(., 3)))
 
 ft <- flextable(coef_data) %>%

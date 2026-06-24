@@ -53,10 +53,23 @@ summary(dplyr::select(suivi_veridens, spec_grav, spec_grav_d, DMC))
 
 mod_veridens <- lm(spec_grav_d ~ spec_grav, suivi_veridens)
 summary(mod_veridens)
+mod_veridens0 <- lm(spec_grav_d ~ 0 + spec_grav, suivi_veridens)
+summary(mod_veridens0)
 
-ggplot(suivi_veridens, aes(x=spec_grav, y= spec_grav_d)) +
+#used
+fig_veridens <- ggplot(suivi_veridens, aes(x=spec_grav, y= spec_grav_d)) +
   geom_point() +
-  geom_smooth(method = "lm", se = TRUE)
+  geom_smooth(method = "lm", formula = y ~ 0+ x, se = TRUE)+
+  ylab("Specific gravity after freezing/thawing") +
+  xlab("Specific gravity of fresh roots")
+fig_veridens
+
+ggsave("data/figures/veridens.png", 
+       plot = fig_veridens,
+       width = 6, 
+       height = 4.5,  
+       dpi = 300)
+
 
 #correction due to water loss by freezing and thawing
 emm_froz <- emmeans(mod_froz, ~ frozen)
@@ -81,7 +94,7 @@ GP_DMC_mod <- lm(DMC_pre ~ growth_period, suivi)
 
 summary(GP_DMC_mod)
 
-#Modelling Severité---------
+#Modelling Severity---------
 DMC_sev_mod <- lm(DMC_pre ~ Severite_marqu*Severite + Severite_cum + Severite_cum_percent + growth_period, suivi)
 summary(DMC_sev_mod)
 
@@ -106,6 +119,8 @@ plot(DMC_var_mod_step)
 
 summary(DMC_var_mod_step)
 DMC_var_mod_step <- lm(DMC_pre ~  cluster + Severite_marqu ,suivi) 
+anova(DMC_var_mod_step)
+DMC_var_mod_step <- lm(DMC_pre ~  Severite_marqu + cluster  ,suivi) 
 anova(DMC_var_mod_step)
 emm_DMC_var <- emmeans(DMC_var_mod_step, ~ cluster)
 emm_DMC_var
