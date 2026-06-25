@@ -264,6 +264,10 @@ mod_clust_step <- step(mod_clust_full)
 summary(mod_clust_step)
 mod_clust_step <- lm(log(PR) ~ growth_period + Severite_cum_percent +  Severite_marqu + Type_manioc+ cluster, suivi_n0) #rearrangement for ANOVA
 anova(mod_clust_step)
+mod_clust_step <- lm(log(PR) ~ growth_period +   Severite_marqu + Type_manioc+ cluster + Severite_cum_percent , suivi_n0) #rearrangement for ANOVA
+anova(mod_clust_step)
+mod_clust_step <- lm(log(PR) ~ growth_period +   Type_manioc+ cluster + Severite_cum_percent + Severite_marqu, suivi_n0) #rearrangement for ANOVA
+anova(mod_clust_step)
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_clust_step)),   #student plot
        aes(x = Fitted, y = Resid)) +
