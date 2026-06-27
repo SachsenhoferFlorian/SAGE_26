@@ -283,7 +283,7 @@ fig_alluvial <- ggplot(variete_alluv2,
   theme_minimal() +
   labs(
     title = "Alluvial Diagram:  Variety clusters -> Community -> Uses",
-    y = "(weighted) count of accessions",
+    y = "(Weighted) count of varieties",
     x = ""
   )
 

@@ -12,7 +12,7 @@ describe(dplyr::select(suivi, c("symptom","symptom_marqu")))
 table(suivi$symptom)
 table(suivi$symptom_marqu)
 
-
+suivi$symptom_marqu <- as.factor(suivi$symptom_marqu)
 
 #Calculations--------------
 #Calcultions of allometric ratios
@@ -48,7 +48,8 @@ suivi <- suivi %>% mutate(Severite_cum = ifelse(deltaT_infect > growth_period, S
 suivi <- suivi %>% mutate(Severite_cum_percent = Severite_cum/(as.numeric(growth_period)))
 
 #Roots and clusters---------
-table(suivi$cluster, suivi$Couleur_rac_in)
+root_pulp_tab <- table(suivi$cluster, suivi$Couleur_rac_in)
+root_pulp_tab
 table(suivi$cluster, suivi$Couleur_rac_ex)
 table(suivi$cluster, suivi$Couleur_rac_cort)
 table(suivi$cluster, suivi$Forme_rac)
@@ -257,17 +258,25 @@ compare_performance(mod_PR_step,
 #Modelling yield with growth period and type of manioc / variety cluster------------
 mod_clust_full <- lm(PR ~  cluster*growth_period + Severite_cum_percent + Severite_marqu*Severite +Severite_cum ,suivi_full)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))               #-> log-transformation
-mod_clust_full <- lm(log(PR) ~  cluster*growth_period + Severite_cum_percent + Severite_marqu+ Severite_marqu*Severite +Severite_cum ,suivi_n0)
+mod_clust_full <- lm(log(PR) ~  cluster +growth_period + Severite_cum_percent +  Severite_marqu*Severite +Severite_cum + symptom_marqu ,suivi_n0)
 plot(fitted(mod_clust_full), rstudent(mod_clust_full))                                                   
 summary(mod_clust_full)
 mod_clust_step <- step(mod_clust_full)
 summary(mod_clust_step)
+performance_aic(mod_clust_step)
 mod_clust_step <- lm(log(PR) ~ growth_period + Severite_cum_percent +  Severite_marqu + Type_manioc+ cluster, suivi_n0) #rearrangement for ANOVA
 anova(mod_clust_step)
-mod_clust_step <- lm(log(PR) ~ growth_period +   Severite_marqu + Type_manioc+ cluster + Severite_cum_percent , suivi_n0) #rearrangement for ANOVA
+mod_clust_step <- lm(log(PR) ~ growth_period  + cluster + Severite_marqu + Severite_cum_percent , suivi_n0) #rearrangement for ANOVA
 anova(mod_clust_step)
-mod_clust_step <- lm(log(PR) ~ growth_period +   Type_manioc+ cluster + Severite_cum_percent + Severite_marqu, suivi_n0) #rearrangement for ANOVA
-anova(mod_clust_step)
+summary(mod_clust_step)
+mod_clust_step_an <- lm(log(PR) ~ growth_period + cluster +  Severite_cum_percent , suivi_n0) #rearrangement for ANOVA
+anova(mod_clust_step_an)
+summary(mod_clust_step_an)
+mod_clust_step_an <- lm(log(PR) ~ growth_period + cluster , suivi_n0) #rearrangement for ANOVA
+anova(mod_clust_step_an)
+summary(mod_clust_step_an)
+
+performance_aic(mod_clust_step_an)
 
 ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_clust_step)),   #student plot
        aes(x = Fitted, y = Resid)) +
@@ -277,7 +286,7 @@ ggplot(data = data.frame(Fitted = fitted(mod_clust_step), Resid = rstudent(mod_c
 
 
 #used
-fig_yieldDAP <- ggplot(suivi_n0, aes(x = growth_period, y = PR, color = cluster)) +
+fig_yieldDAP <- ggplot(suivi_n0, aes(x = Severite_cum_percent, y = PR, color = cluster)) +
   geom_point() +
   geom_parallel_slopes(formula = y ~ x)+
   ylab("Root biomass harvested")+
@@ -290,6 +299,122 @@ ggsave("data/figures/YieldClusters.png",
        height = 4.5,  
        dpi = 300)
 
+
+
+#figure with corrections on Severity_cum_percent linear model
+mod_clust_step <- lm(PR ~ growth_period  + cluster + Severite_marqu + Severite_cum_percent , suivi_n0)
+performance_aic(mod_clust_step)
+
+mean_growth <- mean(suivi_n0$growth_period, na.rm = TRUE)
+mean_severite <- mean(suivi_n0$Severite_marqu, na.rm = TRUE)
+
+
+pred_data <- expand.grid(
+  Severite_cum_percent = seq(min(suivi_n0$Severite_cum_percent), 
+                             max(suivi_n0$Severite_cum_percent), 
+                             length.out = 100),
+  cluster = unique(suivi_n0$cluster),
+  growth_period = mean_growth,
+  Severite_marqu = mean_severite
+)
+
+
+pred_data$pred <- predict(mod_clust_step, newdata = pred_data)
+
+
+fig_yieldSev <- ggplot(suivi_n0, aes(x = Severite_cum_percent, y = PR, color = cluster)) +
+  geom_point(alpha = 0.5) +
+  geom_line(data = pred_data, aes(y = pred), linewidth = 1) +
+  ylab("Root biomass harvested") +
+  xlab("Severity")
+fig_yieldSev
+
+
+#figure on severity with log model
+mod_clust_fig <- lm(log(PR) ~ growth_period + cluster  + Severite_cum_percent, suivi_n0)
+performance_aic(mod_clust_fig)
+
+mean_growth <- mean(suivi_n0$growth_period, na.rm = TRUE)
+mean_severite <- mean(suivi_n0$Severite_marqu, na.rm = TRUE)
+
+
+pred_data <- expand.grid(
+  Severite_cum_percent = seq(min(suivi_n0$Severite_cum_percent), 
+                             max(suivi_n0$Severite_cum_percent), 
+                             length.out = 100),
+  cluster = unique(suivi_n0$cluster),
+  growth_period = mean_growth
+)
+
+
+pred_data$pred <- predict(mod_clust_fig, newdata = pred_data)
+#pred_data$pred <- exp(pred_data$pred_log)  # Back-transform to original scale
+
+
+fig_yieldSev <- ggplot(suivi_n0, aes(x = Severite_cum_percent, y = log(PR), color = cluster)) +
+  geom_point(alpha = 0.5) +
+  geom_line(data = pred_data, aes(y = pred), linewidth = 1) +
+  scale_y_continuous(
+    labels = function(x) round(exp(x), 1)  # Back-transform the labels
+  ) +
+  ylab("Root biomass harvested, log-scale (kg)") +
+  xlab("ADPC2 (%)") 
+fig_yieldSev
+
+ggsave("data/figures/SevYieldClusters.png", 
+       plot = fig_yieldSev,
+       width = 5, 
+       height = 4.5,  
+       dpi = 300)
+
+
+
+#figure on severity with log model
+mod_clust_fig <- lm(log(PR) ~ growth_period + cluster  + Severite_marqu, suivi_n0)
+summary(mod_clust_fig)
+performance_aic(mod_clust_fig)
+cor(suivi$Severite_marqu, suivi$Severite_cum_percent)
+
+mean_growth <- mean(suivi_n0$growth_period, na.rm = TRUE)
+mean_severite <- mean(suivi_n0$Severite_marqu, na.rm = TRUE)
+
+
+pred_data <- expand.grid(
+  Severite_marqu = seq(min(suivi_n0$Severite_marqu), 
+                             max(suivi_n0$Severite_marqu), 
+                             length.out = 100),
+  cluster = unique(suivi_n0$cluster),
+  growth_period = mean_growth
+)
+
+
+pred_data$pred <- predict(mod_clust_fig, newdata = pred_data)
+#pred_data$pred <- exp(pred_data$pred_log)  # Back-transform to original scale
+
+
+fig_yieldSev <- ggplot(suivi_n0, aes(x = Severite_marqu, y = log(PR), color = cluster)) +
+  geom_point(alpha = 0.5) +
+  geom_line(data = pred_data, aes(y = pred), linewidth = 1) +
+  scale_y_continuous(
+    labels = function(x) round(exp(x), 1)  # Back-transform the labels
+  ) +
+  ylab("Root biomass harvested (kg)") +
+  xlab("ADPC2 (%)") 
+fig_yieldSev
+
+ggsave("data/figures/SevYieldClusters.png", 
+       plot = fig_yieldSev,
+       width = 5, 
+       height = 4.5,  
+       dpi = 300)
+
+library(lm.beta)
+mod_std <- lm.beta(mod_clust_step)
+summary(mod_std)
+
+
+
+#emmeans and comparisons
 
 emm_clust <- emmeans(mod_clust_step, ~ cluster, type = "response")
 emm_clust

@@ -28,7 +28,7 @@ ggplot(data=variete, aes(x=cluster, fill=Commune)) +
 fig_AccClustInt <- ggplot(data=variete, aes(x=Commune, fill=cluster)) +
   geom_bar() +
   facet_wrap (~ Intercomm, scales = "free_x")+
-  ylab("Number of accessions")+
+  ylab("Number of varieties")+
   xlab("Municipality")
 fig_AccClustInt
 
@@ -73,7 +73,7 @@ ggplot(data=variete, aes(x=cluster, fill=Farmer)) +
 #used
 fig_AccClustComm <- ggplot(data=variete, aes(x=Communaute, fill=cluster)) +
   geom_bar()+
-  ylab("Number of accessions")+
+  ylab("Number of varieties")+
   xlab("Community")
 
 fig_AccClustComm
@@ -103,7 +103,7 @@ ggplot(data=variete, aes(x=cluster, fill=Cultivation_depuis)) +
 #used
 fig_AccCultiComm <- ggplot(data=variete, aes(x= Cultivation_depuis, fill=Communaute)) +
   geom_bar()+
-  ylab("Number of accessions")+
+  ylab("Number of varieties")+
   xlab("Cultivation since (years)")+
   labs(fill = "Community")
 

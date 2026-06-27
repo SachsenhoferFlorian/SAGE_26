@@ -367,10 +367,28 @@ doc <- read_docx()
 doc <- body_add_flextable(doc, ft)
 print(doc, target = "data/presentation/usage_summary.docx")
 
+
+root_pulp_df <- as.data.frame(root_pulp_tab)
+names(root_pulp_df) <- c("Cluster", "Color", "Count")
+
+# Reshape to wide format (clusters as rows, colors as columns)
+root_pulp_wide <- root_pulp_df %>%
+  pivot_wider(names_from = Color, 
+              values_from = Count, 
+              values_fill = 0)
+
+# Create flextable
+ft <- flextable(root_pulp_wide)
+ft
+
+doc <- read_docx()
+doc <- body_add_flextable(doc, ft)
+print(doc, target = "data/presentation/rootpulp.docx")
+
 library(broom)
 library(flextable)
 #Model presentation-------
-coef_data <- tidy(mod_PR_pow_simplest, conf.int = TRUE) %>%
+coef_data <- tidy(DMC_reg, conf.int = TRUE) %>%
   mutate(across(where(is.numeric), ~ round(., 3)))
 
 ft <- flextable(coef_data) %>%
